@@ -1,11 +1,13 @@
 """ This is the entry point of the GCRental application """
 
 import logging
-from user import AuthService
+import os
+from services.auth_service import AuthService
 from database.sqlite_db_handler import SQLiteDBHandler
 from database.schema import SchemaHandler
-from cui import CUI
+from cui.main_cui import MainCUI
 from configs.app_constants import DB_FILE_NAME
+from repositeries.user_repositery import UserRepo
 
 def main():
     """main script"""
@@ -20,9 +22,9 @@ def main():
     db.connect()
     SchemaHandler.initialise(db)
 
-    auth = AuthService(db)
-    cui = CUI()
-    cui.show_home_screen(auth)
+    user_repo = UserRepo(db)
+    auth = AuthService(user_repo)
+    MainCUI.show_home_screen(auth)
 
 def setup_logging():
     """Configure logging for the application"""

@@ -1,73 +1,44 @@
 """Authentication and User based things"""
 
-import logging
-from abc import ABC, abstractmethod
-from database.database_handler import DatabaseHandler
 from configs.app_constants import UserRole
+from repositeries.user_repositery import UserModel
 
-logger = logging.getLogger(__name__)
-
-class User(ABC):
+class User():
     """The base class for all the user types"""
-    def __init__(self, username: str):
-        self._username = username
+    def __init__(self, fullname, username, mobile, role):
+        self.__fullname = fullname
+        self.__username = username
+        self.__mobile = mobile
+        self.__role = role
 
-    @abstractmethod
-    def get_menu(self):
-        """this returns the CUI menu for the given user"""
+    @property
+    def fullname(self):
+        """return fullname"""
+        return self.__fullname
 
-class Admin(User):
-    """User with administrative privilege"""
+    @property
+    def username(self):
+        """return username"""
+        return self.__username
 
-    def get_menu(self):
-        """this returns the CUI menu for the given user"""
+    @property
+    def mobile(self):
+        """return mobile number"""
+        return self.__mobile
 
-        return [
-            "1. Add Vehicle",
-            "2. Delete Vehicle",
-            "3. View All Bookings",
-            "4. Logout"
-        ]
+    @property
+    def role(self):
+        """return role"""
+        return self.__role
 
-class Customer(User):
-    """User who access the system for booking"""
-
-    def get_menu(self):
-        return [
-            "1. View Vehicles",
-            "2. Book Vehicle",
-            "3. Logout"
-        ]
-
-class AuthService:
-    def __init__(self, db: DatabaseHandler):
-        self.db = db
-
-    def register(self, fullname, username, password, mobile, role):
-        try:
-            self.db.execute(
-                "INSERT INTO users (fullname,username, password, mobile, role) VALUES (?, ?, ?, ?, ?)",
-                (fullname, username, password, mobile, role)
-            )
-            logger.info("User %s registered successfully", fullname)
-        except Exception as e:
-            print("Error has occurred while registering")
-            logger.error("Error occurred while registering user %s, error: %s", fullname, e)
-            raise 
-
-    def login(self, username, password):
-        cursor = self.db.execute(
-            "SELECT role FROM users WHERE username=? AND password=?",
-            (username, password)
-        )
-        result = cursor.fetchone()
-
-        if not result:
-            print("Invalid credentials")
-            return None
-
-        role = int(result[0])
-        if role == UserRole.ADMIN.value:
-            return Admin(username)
+    def is_admin(self):
+        """Method to check the user is Admin or User"""
+        if int(self.__role) == UserRole.ADMIN.value:
+            return True
         else:
-            return Customer(username)
+            return False
+
+    @classmethod
+    def get_user_from(cls, user: UserModel):
+        """Convert UserModel object to a User"""
+        return User(user.fullname, user.username, user.mobile, user.role)

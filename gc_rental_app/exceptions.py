@@ -8,3 +8,12 @@ class ValidationError(GCRentalException):
 
 class VehicleNotFoundError(GCRentalException):
     """Vehicle not found"""
+
+class UserRegistrationError(GCRentalException):
+    """User registration failed"""
+
+class LoginError(GCRentalException):
+    """User Login failed"""
+
+class InvalidLogin(GCRentalException):
+    """User Login failed"""
