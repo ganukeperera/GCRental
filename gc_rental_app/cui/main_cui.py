@@ -1,39 +1,44 @@
 """CUI for the car rental app"""
 
-import os
 import sys
 import configs.strings
 from services.auth_service import AuthService
-from utils import get_valid_input
+from services.vehicle_service import VehicleService
+from services.bookings_service import BookingService
+from utils import get_valid_input, draw_box, clear_screen
 from exceptions import InvalidLogin, LoginError, UserRegistrationError
 from configs.app_constants import USER_NAME_POLICY_STRING, MIN_USERNAME_LENGTH, MIN_PASSWORD_LENGTH, PASSWORD_POLICY_STRING
-from cui.admin_cui import AdminCUI
-from cui.user_cui import UserCUI
+from .admin_cui import AdminCUI
+from .user_cui import UserCUI
 
 class MainCUI:
     """Responsible to generate the UI"""
 
-    @classmethod
-    def clear_screen(cls):
-        """Clear the terminal screen"""
-        os.system('cls' if os.name == 'nt' else 'clear')
+    def __init__(
+            self, 
+            auth_service: AuthService,
+            vehicle_service: VehicleService,
+            booking_service: BookingService
+        ):
+        self.__auth_service = auth_service
+        self.__vehicle_service = vehicle_service
+        self.__booking_service = booking_service
 
-    @classmethod
-    def show_main_menu(cls):
+    def show_main_menu(self):
         """Main menu"""
-
-        print("\n1. Login")
+        draw_box("Main Menu")
+        print("1. Login")
         print("2. Register")
         print("3. Exit")
+        print()
 
-    @classmethod
-    def show_home_screen(cls, auth_service: AuthService):
+    def show_home_screen(self):
         """Main loop"""
         try:
             while True:
-                cls.clear_screen()
+                clear_screen()
 
-                cls.show_main_menu()
+                self.show_main_menu()
                 choice = get_valid_input(
                     prompt="Your choice:",
                     cast_func=int,
@@ -41,23 +46,24 @@ class MainCUI:
                 )
 
                 if choice == 1:
-                    cls.show_login_screen(auth_service)
+                    self.show_login_screen()
                 elif choice == 2:
-                    cls.show_register_screen(auth_service)
+                    self.show_register_screen()
                 elif choice == 3:
-                    cls.clear_screen()
+                    clear_screen()
                     print(configs.strings.EXIT_MESSAGE)
+                    print()
                     sys.exit(0)
         except KeyboardInterrupt:
             print("\n")
             print(configs.strings.EXIT_MESSAGE)
+            print()
 
-    @classmethod
-    def show_login_screen(cls, auth_service: AuthService):
+    def show_login_screen(self):
         """show login flow"""
 
-        cls.clear_screen()
-
+        clear_screen()
+        draw_box("Login")
         username = get_valid_input(
                 prompt="Username: ",
                 validator= lambda x: len(x) > 0
@@ -67,21 +73,27 @@ class MainCUI:
             validator= lambda x: len(x) > 0
         )
         try:
-            user = auth_service.login(username, password)
-            if user.is_admin():
-                AdminCUI.show_admin_menu()
+            user = self.__auth_service.login(username, password)
+            if user.role == 1:
+
+                admin_cui = AdminCUI(user, self.__vehicle_service, self.__booking_service)
+                admin_cui.show_admin_menu()
             else:
-                UserCUI.show_user_menu()
+                user_cui = UserCUI(user, self.__vehicle_service, self.__booking_service)
+                user_cui.show_user_menu()
         except LoginError:
             print(configs.strings.LOGIN_FAILED)
+            input("Press ENTER to continue...")
         except InvalidLogin:
             print(configs.strings.INVALID_CREDENTIALS)
+            input("Press ENTER to continue...")
 
-    @classmethod
-    def show_register_screen(cls, auth_service: AuthService):
+    def show_register_screen(self):
         """Register screen"""
 
         try:
+            clear_screen()
+            draw_box("Register")
             fullname = get_valid_input(
                 prompt = "Fullname :",
                 validator= lambda x: len(x) > 0
@@ -107,7 +119,7 @@ class MainCUI:
                 cast_func=int,
                 error_message= configs.strings.INVALID_INPUT
             )
-            auth_service.register(fullname, username, password, mobile, role)
+            self.__auth_service.register(fullname, username, password, mobile, role)
             print("User Registration completed!")
             input()
         except UserRegistrationError:

@@ -17,3 +17,9 @@ class LoginError(GCRentalException):
 
 class InvalidLogin(GCRentalException):
     """User Login failed"""
+
+class VehicleAlreadyExist(GCRentalException):
+    """Vehicle Already exist"""
+
+class VehicleNotFound(GCRentalException):
+    """Vehicle Not Found"""

@@ -3,11 +3,15 @@
 import logging
 import os
 from services.auth_service import AuthService
+from services.vehicle_service import VehicleService
+from services.bookings_service import BookingService
 from database.sqlite_db_handler import SQLiteDBHandler
 from database.schema import SchemaHandler
 from cui.main_cui import MainCUI
 from configs.app_constants import DB_FILE_NAME
-from repositeries.user_repositery import UserRepo
+from repositories.user_repository import UserRepo
+from repositories.vehicle_repository import VehicleRepository
+from repositories.bookings_repository import BookingsRepository
 
 def main():
     """main script"""
@@ -22,9 +26,16 @@ def main():
     db.connect()
     SchemaHandler.initialise(db)
 
-    user_repo = UserRepo(db)
-    auth = AuthService(user_repo)
-    MainCUI.show_home_screen(auth)
+    auth = AuthService(UserRepo(db))
+    vehicle_service = VehicleService(VehicleRepository(db))
+    bookings_service = BookingService(BookingsRepository(db))
+    
+    main_cui = MainCUI(
+        auth_service=auth,
+        vehicle_service=vehicle_service,
+        booking_service=bookings_service
+    )
+    main_cui.show_home_screen()
 
 def setup_logging():
     """Configure logging for the application"""
