@@ -41,10 +41,8 @@ class SchemaHandler:
             vehicle_id INTEGER NOT NULL,
             start_date DATE NOT NULL,
             end_date DATE NOT NULL,
-            status TEXT DEFAULT 'pending' CHECK(status IN ('pending', 'confirmed', 'cancelled', 'completed')),
+            status TEXT DEFAULT 'pending' CHECK(status IN ('pending', 'approved', 'rejected', 'completed')),
             total_cost DECIMAL(10, 2),
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
             FOREIGN KEY (vehicle_id) REFERENCES vehicles(id) ON DELETE CASCADE
         )

@@ -27,10 +27,9 @@ class AdminCUI:
 
     __bookings_menu = [
                 "1. View All Bookings", 
-                "2. View Pending Bookings",
-                "3. Approve/Reject Booking",
-                "4. Complete Booking",
-                "5. Go Back",
+                "2. View And Manage Pending Bookings",
+                "3. Complete Booking",
+                "4. Go Back",
             ]
 
     def __init__(
@@ -45,9 +44,9 @@ class AdminCUI:
 
     def show_admin_menu(self):
         """Main menu for the Admin"""
-        clear_screen()
-        draw_box("Admin Menu")
         while True:
+            clear_screen()
+            draw_box("Admin Menu")
             for item in self.__menu:
                 print(item)
             print()
@@ -67,9 +66,9 @@ class AdminCUI:
 
     def __show_manage_cars(self):
         """Show manage cars menu"""
-        clear_screen()
-        draw_box("Manage Vehicles")
         while True:
+            clear_screen()
+            draw_box("Manage Vehicles")
             for item in self.__cars_menu:
                 print(item)
             print()
@@ -96,12 +95,15 @@ class AdminCUI:
         try:
             vehicle = self.__collect_vehicle_input()
             self.__vehicle_service.add_vehicle(self.__user, vehicle)
+            print("Vehicle added successfully")
         except PermissionError:
             print("User not authorized")
         except exceptions.VehicleAlreadyExist:
             print("Vehicle Already exist")
         except Exception:
             print("Add vehicle failed! Please try again later")
+        finally:
+            input("Press Enter to continue...")
 
     def __show_update_car(self):
         """Update vehicles"""
@@ -127,6 +129,8 @@ class AdminCUI:
 
         except Exception as e:
             print("Update vehicle failed! Please try again later:", e)
+        finally:
+            input("Press Enter to continue...")
 
     def __show_remove_vehicle(self):
         clear_screen()
@@ -152,12 +156,16 @@ class AdminCUI:
 
         except Exception:
             print("Remove vehicle failed! Please try again later")
+        finally:
+            input("Press Enter to continue...")
 
     def __show_all_vehicles(self):
         clear_screen()
         draw_box("View All Vehicles")
         try:
             vehicles = self.__vehicle_service.view_vehicles(self.__user)
+            if vehicles is None or len(vehicles) == 0:
+                print("No vehicles found!")
             headers = [
                 "ID", "Plate", "Brand", "Model",
                 "Year", "Mileage", "Rate($)",
@@ -182,6 +190,8 @@ class AdminCUI:
             print_table(headers, rows)
         except Exception:
             print("Remove vehicle failed! Please try again later!")
+        finally:
+            input("Press Enter to continue...")
 
     def __collect_vehicle_input(self, existing_vehicle=None):
         plate = get_valid_input(
@@ -249,12 +259,11 @@ class AdminCUI:
             vehicle_id=existing_vehicle.vehicle_id if existing_vehicle else None
     )
 
-
     def __show_manage_bookings(self):
         """Show manage bookings menu"""
-        clear_screen()
-        draw_box("Manage Bookings")
         while True:
+            clear_screen()
+            draw_box("Manage Bookings")
             for item in self.__bookings_menu:
                 print(item)
             print()
@@ -264,15 +273,212 @@ class AdminCUI:
                 validator= lambda x: 1<=x<=len(self.__bookings_menu)
             )
             if choose == 1:
-                #View All Bookings
-                print("View All Bookings")
-
+                self.__show_all_bookings()
             elif choose == 2:
-                #Approve Reject Booking
-                print("")
+                self.__show_manage_pending_bookings()
             elif choose == 3:
-                print("Approve/Reject Booking")
+                self.__show_complete_booking()
             elif choose == 4:
-                print("Complete Booking")
-            elif choose == 5:
                 break
+
+    def __show_all_bookings(self):
+        """View all booking"""
+
+        clear_screen()
+        draw_box("View All Bookings")
+        try:
+            bookings = self.__booking_service.get_all_bookings(self.__user)
+            if not bookings:
+                print("No bookings found.")
+                return
+
+            headers = [
+                "Booking ID",
+                "User ID",
+                "Vehicle ID",
+                "Start Date",
+                "End Date",
+                "Status",
+                "Total Cost"
+            ]
+
+            rows = [
+                [
+                    b.id,
+                    b.user_id,
+                    b.vehicle_id,
+                    b.start_date,
+                    b.end_date,
+                    b.status,
+                    f"${b.total_cost:.2f}" if b.total_cost else "-"
+                ]
+                for b in bookings
+            ]
+
+            print_table(headers, rows)
+
+        except PermissionError:
+            print("You are not authorized to view all bookings.")
+        except Exception as e:
+            print("Failed to load bookings. Please try again later. %s", e)
+        finally:
+            input("Press Enter to continue...")
+
+    def __show_manage_pending_bookings(self):
+        """View Pending bookings and manage them"""
+        clear_screen()
+        draw_box("View And Manage Pending Bookings")
+        try:
+            # Get pending bookings
+            pending_bookings = self.__booking_service.get_pending_bookings(self.__user)
+
+            if not pending_bookings:
+                print("No pending bookings.")
+                return
+
+            # Display pending bookings
+            headers = [
+                "Booking ID",
+                "User ID",
+                "Vehicle ID",
+                "Start Date",
+                "End Date",
+                "Total Cost"
+            ]
+
+            rows = [
+                [
+                    b.id,
+                    b.user_id,
+                    b.vehicle_id,
+                    b.start_date,
+                    b.end_date,
+                    f"${b.total_cost:.2f}" if b.total_cost else "-"
+                ]
+                for b in pending_bookings
+            ]
+
+            print_table(headers, rows)
+
+            # Ask admin if they want to take action
+            choice = input("\nDo you want to approve or reject a booking? (Y/N): ").strip().lower()
+            if choice != "y":
+                return
+
+            # Get booking ID
+            booking_id = int(input("Enter Booking ID: ").strip())
+
+            selected_booking = next(
+                (b for b in pending_bookings if b.id == booking_id), None
+            )
+            if not selected_booking:
+                print("Invalid Booking ID selected.")
+                return
+
+            # Approve or reject
+            action = input("Approve or Reject? (A/R): ").strip().lower()
+            if action == "a":
+                self.__booking_service.approve_booking(self.__user, booking_id)
+                print(f"Booking {booking_id} approved successfully.")
+
+            elif action == "r":
+                self.__booking_service.reject_booking(self.__user, booking_id)
+                print(f"Booking {booking_id} rejected successfully.")
+
+            else:
+                print("Invalid action selected.")
+
+        except PermissionError:
+            print("You are not authorized to manage bookings.")
+        except ValueError:
+            print("Invalid input. Please enter valid numbers.")
+        except Exception as e:
+            print("Failed to update booking. Please try again later.", e)
+        finally:
+            input("Press Enter to continue...")
+
+    def __show_complete_booking(self):
+        """Complete the booking once Vehicle is returned"""
+
+        clear_screen()
+        draw_box("Complete Booking")
+        try:
+            # Step 1: Get approved bookings with user details
+            bookings = self.__booking_service.get_approved_bookings(self.__user)
+
+            if not bookings:
+                print("No approved bookings available to complete.")
+                return
+
+            # Step 2: Display bookings
+            headers = [
+                "Booking ID",
+                "User Name",
+                "Vehicle ID",
+                "Start Date",
+                "End Date",
+                "Total Cost"
+            ]
+
+            rows = [
+                [
+                    b.id,
+                    b.user_full_name,
+                    b.vehicle_id,
+                    b.start_date,
+                    b.end_date,
+                    f"${b.total_cost:.2f}"
+                ]
+                for b in bookings
+            ]
+
+            print_table(headers, rows)
+
+            # Step 3: Ask admin if they want to complete a booking
+            choice = input("\nDo you want to complete any booking? (Y/N): ").strip().lower()
+            if choice != "y":
+                print("No booking completed.")
+                return
+
+            # Step 4: Select booking
+            booking_id = int(input("Enter Booking ID to complete: ").strip())
+
+            booking = next((b for b in bookings if b.id == booking_id), None)
+            if not booking:
+                print("Invalid Booking ID.")
+                return
+
+            # Step 5: Additional charges
+            add_charge_choice = input(
+                "Any additional charges? (Y/N): "
+            ).strip().lower()
+
+            additional_charge = 0
+            if add_charge_choice == "y":
+                additional_charge = float(
+                    input("Enter additional charge amount: ").strip()
+                )
+                if additional_charge < 0:
+                    print("Additional charge cannot be negative.")
+                    return
+
+            # Step 6: Complete booking
+            self.__booking_service.complete_booking(
+                self.__user,
+                booking_id,
+                additional_charge
+            )
+
+            print(
+                f"Booking {booking_id} completed successfully.\n"
+                f"Additional Charges: ${additional_charge:.2f}"
+            )
+
+        except PermissionError:
+            print("You are not authorized to complete bookings.")
+        except ValueError:
+            print("Invalid input. Please enter valid numbers.")
+        except Exception:
+            print("Failed to complete booking. Please try again later.")
+        finally:
+            input("Press Enter to continue...")

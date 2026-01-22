@@ -1,7 +1,6 @@
 """ This is the entry point of the GCRental application """
 
 import logging
-import os
 from services.auth_service import AuthService
 from services.vehicle_service import VehicleService
 from services.bookings_service import BookingService
@@ -19,19 +18,18 @@ def main():
     logger = logging.getLogger(__name__)
     logger.info("GCRental App Launched Successfully!!!")
 
-    # if os.path.exists(DB_FILE_NAME):
-    #     os.remove(DB_FILE_NAME)
-
     db = SQLiteDBHandler(DB_FILE_NAME)
     db.connect()
     SchemaHandler.initialise(db)
 
-    auth = AuthService(UserRepo(db))
-    vehicle_service = VehicleService(VehicleRepository(db))
-    bookings_service = BookingService(BookingsRepository(db))
+    auth_service = AuthService(UserRepo(db))
+    vehicle_repo = VehicleRepository(db)
+    booking_repo = BookingsRepository(db)
+    vehicle_service = VehicleService(vehicle_repo, booking_repo)
+    bookings_service = BookingService(booking_repo, vehicle_repo)
     
     main_cui = MainCUI(
-        auth_service=auth,
+        auth_service=auth_service,
         vehicle_service=vehicle_service,
         booking_service=bookings_service
     )

@@ -17,6 +17,12 @@ PASSWORD_POLICY_STRING = f"Minimum length of the password is {MIN_PASSWORD_LENGT
 
 class UserRole(Enum):
     """Define the enum for the user roles"""
-
     ADMIN = 1
     USER = 2
+
+class BookingStatus(Enum):
+    """Define the enum for the booking statuses"""
+    PENDING = "pending"
+    APPROVED = "approved"
+    REJECTED = "rejected"
+    COMPLETED = "completed"

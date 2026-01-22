@@ -81,11 +81,8 @@ class MainCUI:
             else:
                 user_cui = UserCUI(user, self.__vehicle_service, self.__booking_service)
                 user_cui.show_user_menu()
-        except LoginError:
-            print(configs.strings.LOGIN_FAILED)
-            input("Press ENTER to continue...")
         except InvalidLogin:
-            print(configs.strings.INVALID_CREDENTIALS)
+            print("\n",configs.strings.INVALID_CREDENTIALS, sep="")
             input("Press ENTER to continue...")
 
     def show_register_screen(self):
@@ -121,7 +118,5 @@ class MainCUI:
             )
             self.__auth_service.register(fullname, username, password, mobile, role)
             print("User Registration completed!")
-            input()
         except UserRegistrationError:
             print(configs.strings.REGISTRATION_FAILED)
-            input()

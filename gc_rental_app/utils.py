@@ -2,6 +2,7 @@
 
 import logging
 import os
+from datetime import datetime, date
 import configs.strings
 
 logger = logging.getLogger(__name__)
@@ -110,3 +111,14 @@ def draw_box(title, width=40):
 def clear_screen():
     """Clear the terminal screen"""
     os.system('cls' if os.name == 'nt' else 'clear')
+
+def get_date_input(prompt: str) -> date:
+    """Prompt user for a date and return a date object"""
+    while True:
+        user_input = input(prompt).strip()
+        try:
+            # Expect format YYYY-MM-DD
+            dt = datetime.strptime(user_input, "%Y-%m-%d").date()
+            return dt
+        except ValueError:
+            print("Invalid date format! Please enter in YYYY-MM-DD format.")

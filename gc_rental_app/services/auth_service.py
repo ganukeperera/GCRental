@@ -8,7 +8,7 @@ from exceptions import UserRegistrationError, InvalidLogin, LoginError
 logger = logging.getLogger(__name__)
 
 class AuthService():
-    """Service responsible to handle login and register user related"""
+    """Service responsible to handle login and register user related business logics"""
 
     def __init__(self, repo: UserRepo):
         self.__repo = repo
@@ -28,7 +28,7 @@ class AuthService():
         """Authenticate a user"""
         try:
             user = self.__repo.select_user(username)
-            if user.password != password:
+            if (user is None) or (user.password != password):
                 raise InvalidLogin("Wrong Credentials")
             
             return user
