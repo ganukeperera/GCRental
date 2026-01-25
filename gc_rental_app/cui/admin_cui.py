@@ -2,13 +2,15 @@
 
 from utils import get_valid_input, print_table, draw_box, clear_screen
 from repositories.entities.vehicle import Vehicle
-from repositories.entities.user import User
 import configs.strings
 from services.vehicle_service import VehicleService
 from services.bookings_service import BookingService
 import exceptions
+from .session import Session
+from .cui import CUI
 
-class AdminCUI:
+
+class AdminCUI(CUI):
     """CUI related to Admin"""
 
     __menu = [
@@ -34,15 +36,15 @@ class AdminCUI:
 
     def __init__(
             self,
-            user: User,
+            session: Session,
             vehicle_service: VehicleService,
             bookings_service: BookingService
         ):
-        self.__user = user
+        self.__session = session
         self.__vehicle_service = vehicle_service
         self.__booking_service = bookings_service
 
-    def show_admin_menu(self):
+    def show_menu(self):
         """Main menu for the Admin"""
         while True:
             clear_screen()
@@ -60,6 +62,7 @@ class AdminCUI:
             elif choose == 2:
                 self.__show_manage_bookings()
             elif choose == 3:
+                self.__session.logout()
                 break
             else:
                 print(configs.strings.INVALID_INPUT)
@@ -94,7 +97,7 @@ class AdminCUI:
         draw_box("Add Vehicles")
         try:
             vehicle = self.__collect_vehicle_input()
-            self.__vehicle_service.add_vehicle(self.__user, vehicle)
+            self.__vehicle_service.add_vehicle(self.__session.current_user, vehicle)
             print("Vehicle added successfully")
         except PermissionError:
             print("User not authorized")
@@ -118,7 +121,7 @@ class AdminCUI:
             print("Press Enter to keep existing values")
             updated_vehicle = self.__collect_vehicle_input(existing_vehicle)
             print(updated_vehicle.year)
-            self.__vehicle_service.update_vehicle(self.__user, updated_vehicle)
+            self.__vehicle_service.update_vehicle(self.__session.current_user, updated_vehicle)
             print("Vehicle updated successfully")
 
         except PermissionError:
@@ -145,7 +148,7 @@ class AdminCUI:
             if not existing_vehicle:
                 return
 
-            self.__vehicle_service.remove_vehicle(self.__user, plate_number=plate)
+            self.__vehicle_service.remove_vehicle(self.__session.current_user, plate_number=plate)
             print("Vehicle removed successfully")
 
         except PermissionError:
@@ -163,7 +166,7 @@ class AdminCUI:
         clear_screen()
         draw_box("View All Vehicles")
         try:
-            vehicles = self.__vehicle_service.view_vehicles(self.__user)
+            vehicles = self.__vehicle_service.view_vehicles(self.__session.current_user)
             if vehicles is None or len(vehicles) == 0:
                 print("No vehicles found!")
             headers = [
@@ -287,7 +290,7 @@ class AdminCUI:
         clear_screen()
         draw_box("View All Bookings")
         try:
-            bookings = self.__booking_service.get_all_bookings(self.__user)
+            bookings = self.__booking_service.get_all_bookings(self.__session.current_user)
             if not bookings:
                 print("No bookings found.")
                 return
@@ -330,7 +333,7 @@ class AdminCUI:
         draw_box("View And Manage Pending Bookings")
         try:
             # Get pending bookings
-            pending_bookings = self.__booking_service.get_pending_bookings(self.__user)
+            pending_bookings = self.__booking_service.get_pending_bookings(self.__session.current_user)
 
             if not pending_bookings:
                 print("No pending bookings.")
@@ -378,11 +381,11 @@ class AdminCUI:
             # Approve or reject
             action = input("Approve or Reject? (A/R): ").strip().lower()
             if action == "a":
-                self.__booking_service.approve_booking(self.__user, booking_id)
+                self.__booking_service.approve_booking(self.__session.current_user, booking_id)
                 print(f"Booking {booking_id} approved successfully.")
 
             elif action == "r":
-                self.__booking_service.reject_booking(self.__user, booking_id)
+                self.__booking_service.reject_booking(self.__session.current_user, booking_id)
                 print(f"Booking {booking_id} rejected successfully.")
 
             else:
@@ -404,7 +407,7 @@ class AdminCUI:
         draw_box("Complete Booking")
         try:
             # Step 1: Get approved bookings with user details
-            bookings = self.__booking_service.get_approved_bookings(self.__user)
+            bookings = self.__booking_service.get_approved_bookings(self.__session.current_user)
 
             if not bookings:
                 print("No approved bookings available to complete.")
@@ -464,7 +467,7 @@ class AdminCUI:
 
             # Step 6: Complete booking
             self.__booking_service.complete_booking(
-                self.__user,
+                self.__session.current_user,
                 booking_id,
                 additional_charge
             )

@@ -3,14 +3,15 @@
 import logging
 from utils import get_valid_input, clear_screen, draw_box, get_date_input, print_table
 import configs.strings
-from repositories.entities.user import User
 from repositories.entities.booking import Booking
 from services.vehicle_service import VehicleService
 from services.bookings_service import BookingService
+from cui.session import Session
+from .cui import CUI
 
 logger = logging.getLogger(__name__)
 
-class UserCUI:
+class UserCUI(CUI):
     """CUI related to Admin"""
 
     __menu = [
@@ -21,15 +22,15 @@ class UserCUI:
     
     def __init__(
             self,
-            user: User,
+            session: Session,
             vehicle_service: VehicleService,
             bookings_service: BookingService
         ):
-        self.__user = user
+        self.__session = session
         self.__vehicle_service = vehicle_service
         self.__booking_service = bookings_service
 
-    def show_user_menu(self):
+    def show_menu(self):
         """Main menu for the User"""
 
         while True:
@@ -49,6 +50,7 @@ class UserCUI:
             elif choose == 2:
                 self.view_my_bookings()
             elif choose == 3:
+                self.__session.logout()
                 break
 
     def show_book_car(self):
@@ -120,14 +122,14 @@ class UserCUI:
                 
                 # Create booking
                 booking = Booking(
-                    user_id=self.__user.id,
+                    user_id=self.__session.current_user.id,
                     vehicle_id=selected_vehicle.id,
                     start_date=start_date,
                     end_date=end_date,
                     status="pending",
                     total_cost=total_cost
                 )
-                self.__booking_service.add_booking(self.__user, booking)
+                self.__booking_service.add_booking(self.__session.current_user, booking)
                 print(f"Booking successful! Booking ID: {booking.id}")
                 input("Press Enter to continue...")
                 
@@ -142,7 +144,7 @@ class UserCUI:
         clear_screen()
         draw_box("View My Bookings")
         try:
-            bookings = self.__booking_service.get_bookings_for_user(self.__user)
+            bookings = self.__booking_service.get_bookings_for_user(self.__session.current_user)
 
             if not bookings:
                 print("You have no bookings.")

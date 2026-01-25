@@ -11,21 +11,26 @@ from configs.app_constants import USER_NAME_POLICY_STRING, MIN_USERNAME_LENGTH, 
 from .admin_cui import AdminCUI
 from .super_admin_cui import SuperAdminCUI
 from .user_cui import UserCUI
+from .session import Session
+from .cui_factory import CUIFactory
 
-class MainCUI:
+class GCRentalApp:
     """Responsible to generate the UI"""
 
     def __init__(
-            self, 
+            self,
+            session: Session,
             auth_service: AuthService,
             vehicle_service: VehicleService,
             booking_service: BookingService
         ):
+        self.__session = session
         self.__auth_service = auth_service
         self.__vehicle_service = vehicle_service
         self.__booking_service = booking_service
+        
 
-    def show_main_menu(self):
+    def show_menu(self):
         """Main menu"""
         draw_box("Main Menu")
         print("1. Login")
@@ -33,13 +38,13 @@ class MainCUI:
         print("3. Exit")
         print()
 
-    def show_home_screen(self):
+    def start(self):
         """Main loop"""
         try:
             while True:
                 clear_screen()
 
-                self.show_main_menu()
+                self.show_menu()
                 choice = get_valid_input(
                     prompt="Your choice:",
                     cast_func=int,
@@ -75,15 +80,15 @@ class MainCUI:
         )
         try:
             user = self.__auth_service.login(username, password)
-            if user.role == 0:
-                super_admin_cui = SuperAdminCUI(self.__auth_service)
-                super_admin_cui.show_super_admin_menu()
-            elif user.role == 1:
-                admin_cui = AdminCUI(user, self.__vehicle_service, self.__booking_service)
-                admin_cui.show_admin_menu()
-            else:
-                user_cui = UserCUI(user, self.__vehicle_service, self.__booking_service)
-                user_cui.show_user_menu()
+            self.__session.login(user)
+            cui = CUIFactory.create(
+                user,
+                self.__session,
+                self.__auth_service,
+                self.__vehicle_service,
+                self.__booking_service
+                )
+            cui.show_menu()
         except InvalidLogin:
             print("\n",configs.strings.INVALID_CREDENTIALS, sep="")
             input("Press ENTER to continue...")

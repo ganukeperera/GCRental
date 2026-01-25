@@ -6,7 +6,8 @@ from services.vehicle_service import VehicleService
 from services.bookings_service import BookingService
 from database.sqlite_db_handler import SQLiteDBHandler
 from database.schema import SchemaHandler
-from cui.main_cui import MainCUI
+from cui.gc_rental_app import GCRentalApp
+from cui.session import Session
 from configs.app_constants import DB_FILE_NAME
 from repositories.user_repository import UserRepo
 from repositories.vehicle_repository import VehicleRepository
@@ -35,12 +36,13 @@ def main():
     bookings_service = BookingService(booking_repo, vehicle_repo)
     
     # Show Initial Menu
-    main_cui = MainCUI(
+    rental_app = GCRentalApp(
+        session= Session(),
         auth_service=auth_service,
         vehicle_service=vehicle_service,
         booking_service=bookings_service
     )
-    main_cui.show_home_screen()
+    rental_app.start()
     logger.info("GCRental App Launched Successfully!!!")
 
 def setup_logging():
