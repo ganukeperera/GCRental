@@ -15,21 +15,21 @@ class AdminCUI(CUI):
 
     __menu = [
                 "1. Manage Cars",
-                "2. Manage Booking",
+                "2. Manage Bookings",
                 "3. Logout",
             ]
 
     __cars_menu = [
-                "1. Add Cars", 
-                "2. Update Cars", 
-                "3. Remove Cars", 
+                "1. Add New Cars", 
+                "2. Update Car Details", 
+                "3. Remove CarB", 
                 "4. View All Cars",
                 "5. Go Back",
             ]
 
     __bookings_menu = [
                 "1. View All Bookings", 
-                "2. View And Manage Pending Bookings",
+                "2. Manage Pending Bookings",
                 "3. Complete Booking",
                 "4. Go Back",
             ]

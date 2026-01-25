@@ -3,11 +3,11 @@
 from enum import Enum
 
 # Application
-APP_NAME = "GC Rentals"
+APP_NAME = "GC Rental"
 APP_VERSION = "1.0.0"
 
 # Database
-DB_FILE_NAME = "gc_rentals.db"
+DB_FILE_NAME = "gc_rental.db"
 
 # Input Rules
 MIN_USERNAME_LENGTH = 3

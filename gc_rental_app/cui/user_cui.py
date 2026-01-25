@@ -12,7 +12,7 @@ from .cui import CUI
 logger = logging.getLogger(__name__)
 
 class UserCUI(CUI):
-    """CUI related to Admin"""
+    """CUI related to User"""
 
     __menu = [
                 "1. Book a Car",
@@ -75,7 +75,6 @@ class UserCUI(CUI):
             vehicles = self.__vehicle_service.list_available_vehicles(start_date, end_date)
             if not vehicles:
                 print("\nNo vehicles available for the selected period.")
-                input("Press Enter to continue...")
             else:
                 headers = ["ID", "Plate", "Make", "Model", "Year", "Rate($/day)", "Min Days", "Max Days"]
                 rows = [
