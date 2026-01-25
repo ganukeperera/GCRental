@@ -17,6 +17,7 @@ PASSWORD_POLICY_STRING = f"Minimum length of the password is {MIN_PASSWORD_LENGT
 
 class UserRole(Enum):
     """Define the enum for the user roles"""
+    SUPER_ADMIN = 0
     ADMIN = 1
     USER = 2
 

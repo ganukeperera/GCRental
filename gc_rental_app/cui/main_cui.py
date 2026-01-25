@@ -6,9 +6,10 @@ from services.auth_service import AuthService
 from services.vehicle_service import VehicleService
 from services.bookings_service import BookingService
 from utils import get_valid_input, draw_box, clear_screen
-from exceptions import InvalidLogin, LoginError, UserRegistrationError
-from configs.app_constants import USER_NAME_POLICY_STRING, MIN_USERNAME_LENGTH, MIN_PASSWORD_LENGTH, PASSWORD_POLICY_STRING
+from exceptions import InvalidLogin, UserRegistrationError
+from configs.app_constants import USER_NAME_POLICY_STRING, MIN_USERNAME_LENGTH, MIN_PASSWORD_LENGTH, PASSWORD_POLICY_STRING, UserRole
 from .admin_cui import AdminCUI
+from .super_admin_cui import SuperAdminCUI
 from .user_cui import UserCUI
 
 class MainCUI:
@@ -74,8 +75,10 @@ class MainCUI:
         )
         try:
             user = self.__auth_service.login(username, password)
-            if user.role == 1:
-
+            if user.role == 0:
+                super_admin_cui = SuperAdminCUI(self.__auth_service)
+                super_admin_cui.show_super_admin_menu()
+            elif user.role == 1:
                 admin_cui = AdminCUI(user, self.__vehicle_service, self.__booking_service)
                 admin_cui.show_admin_menu()
             else:
@@ -110,13 +113,7 @@ class MainCUI:
                 validator= lambda x: len(x) > 0,
                 error_message= configs.strings.INVALID_INPUT
             )
-            role = get_valid_input(
-                prompt = "Role (1. Admin, 2. User) :",
-                validator= lambda x: 1 <= x <= 2,
-                cast_func=int,
-                error_message= configs.strings.INVALID_INPUT
-            )
-            self.__auth_service.register(fullname, username, password, mobile, role)
+            self.__auth_service.register(fullname, username, password, mobile, UserRole.USER.value)
             print("User Registration completed!")
         except UserRegistrationError:
             print(configs.strings.REGISTRATION_FAILED)

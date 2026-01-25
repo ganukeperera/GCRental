@@ -3,10 +3,10 @@
 import logging
 from datetime import date
 from repositories.vehicle_repository import VehicleRepository
-from repositories.bookings_repository import BookingsRepository
 from repositories.entities.vehicle import Vehicle
 from repositories.entities.user import User
 from exceptions import VehicleAlreadyExist, VehicleNotFound
+from .authorization_service import AuthorizationService
 
 logger = logging.getLogger(__name__)
 
@@ -16,15 +16,13 @@ class VehicleService:
     including adding, removing, updating and viewing
     """
 
-    def __init__(self, repo: VehicleRepository, booking_repo: BookingsRepository):
+    def __init__(self, repo: VehicleRepository):
         self.__vehicle_repo = repo
-        self.__booking_repo = booking_repo
 
     def add_vehicle(self, user: User, vehicle: Vehicle):
         """Service used for add vehicles"""
         try:
-            if user.role != 1:
-                raise PermissionError("Not authorized!")
+            AuthorizationService.require_admin(user)
 
             existing = self.__vehicle_repo.get_by_plate(vehicle.plate_number)
             if existing:
@@ -44,8 +42,7 @@ class VehicleService:
     def update_vehicle(self, user: User, vehicle: Vehicle):
         """Service used to update details of a existing vehicle"""
         try:
-            if user.role != 1:
-                raise PermissionError("Not authorized!")
+            AuthorizationService.require_admin(user)
 
             existing = self.__vehicle_repo.get_by_plate(vehicle.plate_number)
             if not existing:
@@ -65,8 +62,7 @@ class VehicleService:
     def remove_vehicle(self, user, plate_number):
         """Service used to remove a vehicle"""
         try:
-            if user.role != 1:
-                raise PermissionError("Not authorized!")
+            AuthorizationService.require_admin(user)
 
             existing = self.__vehicle_repo.get_by_plate(plate_number=plate_number)
             if not existing:
@@ -86,8 +82,7 @@ class VehicleService:
     def view_vehicles(self, user: User):
         """Service used to View all vehicles"""
         try:
-            if user.role != 1:
-                raise PermissionError("Not authorized!")
+            AuthorizationService.require_admin(user)
 
             return self.__vehicle_repo.get_all()
         except PermissionError as e:

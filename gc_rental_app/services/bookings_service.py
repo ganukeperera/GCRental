@@ -9,6 +9,7 @@ from repositories.bookings_repository import BookingsRepository
 from repositories.vehicle_repository import VehicleRepository
 from configs.app_constants import BookingStatus
 from exceptions import BookingNotFound
+from .authorization_service import AuthorizationService
 
 logger = logging.getLogger(__name__)
 
@@ -22,9 +23,9 @@ class BookingService:
     def add_booking(self, user: User, booking: Booking):
         """Service method to add a booking"""
         try:
-            # Only allow user to book (admin can’t book vehicles)
-            if user.role != 2:
-                raise PermissionError("Only customers can make bookings!")
+            # Only allow user to book (admin can’t book vehicles with this version)
+            # Later this feature can enable this even for admin if require
+            AuthorizationService.require_user(user)
 
             # Check vehicle availability for given period
             available = self.__check_vehicle_availability(
@@ -60,8 +61,7 @@ class BookingService:
     def get_bookings_for_user(self, user: User) -> list[Booking]:
         """Return all bookings for the logged-in user"""
         try:
-            if user.role != 2:  # assuming 2 = customer
-                raise PermissionError("Only customers can view their bookings")
+            AuthorizationService.require_user(user)
 
             return self.__booking_repo.get_by_user_id(user.user_id)
 
@@ -87,15 +87,13 @@ class BookingService:
 
     def get_pending_bookings(self, user: User):
         """Service method to return pending bookings"""
-        if user.role != 1:
-            raise PermissionError("Only admins can view pending bookings")
+        AuthorizationService.require_admin(user)
 
         return self.__booking_repo.get_bookings_by_status(BookingStatus.PENDING)
 
     def get_approved_bookings(self, user: User):
         """Service method to return approved bookings"""
-        if user.role != 1:
-            raise PermissionError("Only admins can view pending bookings")
+        AuthorizationService.require_admin(user)
 
         return self.__booking_repo.get_bookings_by_status(BookingStatus.APPROVED)
 
@@ -115,8 +113,7 @@ class BookingService:
             ):
         """Used to approve or reject of a pending booking"""
         try:
-            if user.role != 1:
-                raise PermissionError("Not authorized")
+            AuthorizationService.require_admin(user)
 
             booking = self.__booking_repo.get_by_booking_id(booking_id)
             if not booking:
@@ -156,8 +153,7 @@ class BookingService:
     def get_all_bookings(self, user: User) -> list[Booking]:
         """view all bookings"""
         try:
-            if user.role != 1:
-                raise PermissionError("Only admin can view all bookings")
+            AuthorizationService.require_admin(user)
             
             return self.__booking_repo.get_all()
 
@@ -172,8 +168,7 @@ class BookingService:
     def complete_booking(self, admin_user, booking_id, new_mileage, additional_charge):
         """Complete booking"""
         try:
-            if admin_user.role != 1:
-                raise PermissionError("Not authorized")
+            AuthorizationService.require_admin(admin_user)
 
             booking = self.__booking_repo.get_by_booking_id(booking_id)
             if not booking:

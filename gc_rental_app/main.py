@@ -31,7 +31,7 @@ def main():
 
     # Used dependency injection to initialize service layer with required dependencies
     auth_service = AuthService(user_repo)
-    vehicle_service = VehicleService(vehicle_repo, booking_repo)
+    vehicle_service = VehicleService(vehicle_repo)
     bookings_service = BookingService(booking_repo, vehicle_repo)
     
     # Show Initial Menu

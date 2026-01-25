@@ -20,11 +20,14 @@ class DatabaseHandler(ABC):
     def execute(self, sql, params=()):
         """Abstract Method: Execute given sql statement"""
 
+    @abstractmethod
     def execute_many(self, sql, params=()):
         """Abstract Method: Execute more than one sql statements with given parameter array"""
 
+    @abstractmethod
     def execute_and_fetch_one(self, sql, params=()):
         """Abstract Method: Execute sql statement and returns one record"""
 
+    @abstractmethod
     def execute_and_fetch_all(self, sql, params=()):
         """Abstract Method: Execute sql statement and returns all records found"""

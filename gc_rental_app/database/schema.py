@@ -2,6 +2,7 @@
 
 import logging
 from .sqlite_db_handler import DatabaseHandler
+from configs.app_constants import UserRole
 
 class SchemaHandler:
     """This class suppose to create necessary tables in the empty db"""
@@ -54,6 +55,7 @@ class SchemaHandler:
         db.execute(cls.USER_TABLE_SCHEMA)
         db.execute(cls.VEHICLE_TABLE_SCHEMA)
         db.execute(cls.BOOKING_TABLE_SCHEMA)
+        cls.__seed_super_admin(db)
 
     @classmethod
     def drop_all_tables(cls, db: DatabaseHandler):
@@ -61,3 +63,15 @@ class SchemaHandler:
         db.execute("DROP TABLE IF EXISTS users")
         db.execute("DROP TABLE IF EXISTS vehicles")
         db.execute("DROP TABLE IF EXISTS bookings")
+
+    @classmethod
+    def __seed_super_admin(cls, db: DatabaseHandler):
+
+        exists = db.execute_and_fetch_one(
+        "SELECT COUNT(*) FROM users WHERE role = ?",
+        (UserRole.SUPER_ADMIN.value,)
+        )
+
+        if not exists:
+            db.execute(
+            "INSERT INTO users (fullname, username, password, role) VALUES (?, ?, ?, ?)", ("superadmin", "superadmin", "1234", UserRole.SUPER_ADMIN.value) ) 

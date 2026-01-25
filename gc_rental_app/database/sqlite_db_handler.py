@@ -15,12 +15,12 @@ class SQLiteDBHandler(DatabaseHandler):
     def __new__(cls, *args, **kwargs):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
-            cls._instance._connect()
         return cls._instance
 
     def __init__(self, db_path):
         """Abstract Method: Init with db path"""
         self.__db_path = db_path
+        self._connect()
 
     def _connect(self):
         """Connect to the sqlite DB"""
@@ -45,10 +45,9 @@ class SQLiteDBHandler(DatabaseHandler):
 
         try:
             SQLiteDBHandler.logger.debug("Start execution of the SQL command: %s", sql)
-            connection = self.connect()
-            cursor = connection.cursor()
+            cursor = self._connection.cursor()
             cursor.execute(sql, params)
-            connection.commit()
+            self._connection.commit()
             return cursor
         except sqlite3.Error as e:
             SQLiteDBHandler.logger.error("Execution of the SQL command failed: %s, error: %s", sql, e)
@@ -58,10 +57,9 @@ class SQLiteDBHandler(DatabaseHandler):
         """Execute more than one sql statement with given parameter array"""
         try:
             SQLiteDBHandler.logger.debug("Start execution of the SQL command: %s", sql)
-            connection = self.connect()
-            cursor = connection.cursor()
+            cursor = self._connection.cursor()
             cursor.executemany(sql, params)
-            connection.commit()
+            self._connection.commit()
             return cursor
         except sqlite3.Error as e:
             SQLiteDBHandler.logger.error("Execution of the SQL command failed: %s, error: %s", sql, e)
@@ -71,8 +69,7 @@ class SQLiteDBHandler(DatabaseHandler):
         """Execute sql statement and returns one record"""
         try:
             SQLiteDBHandler.logger.debug("Start execution of the SQL command: %s", sql)
-            connection = self.connect()
-            cursor = connection.cursor()
+            cursor = self._connection.cursor()
             result = cursor.execute(sql, params)
             (record,) = result.fetchone()
             return record
@@ -84,8 +81,7 @@ class SQLiteDBHandler(DatabaseHandler):
         """Execute sql statement and returns all records found"""
 
         try:
-            connection = self.connect()
-            cursor = connection.cursor()
+            cursor = self._connection.cursor()
             result = cursor.execute(sql, params)
             return result.fetchall()
         except sqlite3.Error as e:
