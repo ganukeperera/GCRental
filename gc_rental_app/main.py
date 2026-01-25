@@ -14,26 +14,34 @@ from repositories.bookings_repository import BookingsRepository
 
 def main():
     """main script"""
+
+    # Initialize logging mechanism
     setup_logging()
     logger = logging.getLogger(__name__)
-    logger.info("GCRental App Launched Successfully!!!")
 
+    # Initialize the SQLite Database
     db = SQLiteDBHandler(DB_FILE_NAME)
-    db.connect()
+    # Run schemas to create tables
     SchemaHandler.initialise(db)
 
-    auth_service = AuthService(UserRepo(db))
+    # Initialize the Repositories injecting SQLite database handler
+    user_repo = UserRepo(db)
     vehicle_repo = VehicleRepository(db)
     booking_repo = BookingsRepository(db)
+
+    # Used dependency injection to initialize service layer with required dependencies
+    auth_service = AuthService(user_repo)
     vehicle_service = VehicleService(vehicle_repo, booking_repo)
     bookings_service = BookingService(booking_repo, vehicle_repo)
     
+    # Show Initial Menu
     main_cui = MainCUI(
         auth_service=auth_service,
         vehicle_service=vehicle_service,
         booking_service=bookings_service
     )
     main_cui.show_home_screen()
+    logger.info("GCRental App Launched Successfully!!!")
 
 def setup_logging():
     """Configure logging for the application"""

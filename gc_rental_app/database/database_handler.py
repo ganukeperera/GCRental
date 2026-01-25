@@ -9,7 +9,7 @@ class DatabaseHandler(ABC):
     _connection = None
 
     @abstractmethod
-    def connect(self):
+    def _connect(self):
         """Abstract Method: Establish the database connection"""
 
     @abstractmethod

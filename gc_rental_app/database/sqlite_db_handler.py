@@ -15,13 +15,14 @@ class SQLiteDBHandler(DatabaseHandler):
     def __new__(cls, *args, **kwargs):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
+            cls._instance._connect()
         return cls._instance
 
     def __init__(self, db_path):
         """Abstract Method: Init with db path"""
         self.__db_path = db_path
 
-    def connect(self):
+    def _connect(self):
         """Connect to the sqlite DB"""
         if self._connection is None:
             self._connection = sqlite3.connect(
