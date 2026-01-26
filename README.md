@@ -1,44 +1,94 @@
-# 🚘 GC Rental App
+# 🚘 GC Rental - Car Rental Management System
 
-## User Documentation
+## Read Me - User and Programmer Documentation
 
-## 1. Overview
+## 1. Purpose of the Application
 
-The GC Rental App is a car rental management system which is a console base application that allows users to manage vehicle rentals through a simple text interface.
+The GC Rental App is a car rental management system which is a console base application developed in Python to manage vehicle rentals efficiently. The system allows customer to browse and book vehicles, administrators to manage vehicles and bookings, and a super administrator to create admin accounts.
 
-The current version of the app support three types of users:
-
-* Super Admin
-* Admin
-* Customer
-
-Each user type has different permission and access levels.
-
-This document explains how to install, run and use the system.
+THe application has structured system design, role-based access control, database integration, and layered architecture.
 
 
 ## 2. System Requirement
 
 To run this system, you need:
 
-* Python 3.x installed
+* Python 3.10 or higher
 * Install all the dependencies included in requirements.txt file
 * SQLite (automatically handled by Python)
+* Operating Systems: macOS, Windows or Linux
 
 
-## 3. How to Run the System
+## 3. Installation and Configuration Guide
 
-1. Download the unzip the file given or clone the project directly from git hub link provided.
-2. Open a terminal inside the project folder.
-3. Run the following command:
+Follow the steps below to configure and run the system
 
+### Step 1: Extract the Project
+
+Download and extract the project folder to your local machine.
+
+### Step 2: Verify Python Installation
+
+Open a terminal and run: `python3 --version`
+
+Ensure Python 3.10 or above is installed. Prefer Python version 3.14
+
+You can download the latest Python version from:
+https://www.python.org/downloads/
+
+### Step 3: Create Virtual Environment 
+
+It is recommended to use a Python virtual environment to isolate project dependencies.
+
+First cd in to the `GCRental` project folder. Then follow the instructions below based on the OS you are using.
+
+### On Windows:
+
+* Run this command to setup virtual environment
+`python -m venv venv`
+
+* Activate it
+`venv\scripts\activate`
+
+### On macOS / Linux:
+
+* Run this command
+`python3 -m venv venv`
+
+* Activate it:
+`source venv/bin/activate`
+
+### Step 4: Install Required Dependencies
+
+Use the given requirements.txt file and install dependencies using:
+`pip install -r requirements.txt`
+
+### Step 5: Run the Application
+
+Use the terminal and cd into `gc_rental_app` application folder.
+Then run the following command:
 `python main.py`
 
-4. The system will start and display the main menu.
+### Step 6: Database Initialization
+* When the system runs for the first time, the SQLite database file is automatically created.
+* Required tables are generated automatically.
+* The default Super Admin account is inserted into the database.
 
-THe database will be created automatically if it does not already exist.
+*No manual database configuration is required.
 
-## 4. Default Super Admin Account
+## 4. Operating the System
+
+When the application starts, the main menu provides the following options:
+* Login
+* Register
+* Exit
+
+New customer must register before logging in (except the predefined super Admin).
+You need to create at least one `admin` account to manage car rentals. Admin accounts can only be created by the Super Admin. Super admin login details mentioned in the next section. 
+Once created logout from super admin and login back as the admin
+
+
+## 5. Default Super Admin Account
 
 The system automatically creates a Super Admin Account Directly in the database during initialization.
 
@@ -47,21 +97,12 @@ You must use the following credentials to login in as Super admin:
 Username: superadmin
 Password: 1234
 
-## 5. Main Menu Options
-
-When the application starts, users can:
-
-* Login
-* Register
-* Exit
-
-New users must register before logging in except for the Super Admin.
 
 ## 6. User Roles and Functionalities
 
 ### Super Admin
 
-The super admin can just create admins so that admins can manage the vehicles and bookings of the system.
+The super admin can just create admins so that admins can manage the vehicles and bookings for the system.
 
 ### Admin
 
@@ -144,6 +185,41 @@ If an unexpected error occurs during any of the action, the details of the error
 * The log file is mainly used for debugging and system maintenance purposes.
 
 If the system behaves unexpectedly, administrators can check the log file to review the recorded error information or can be passed to the developers for further analysis.  
+
+## 10. Project Structure and File Description
+
+Below is the general structure of the project folder:
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+File Purpose Overview
+
+* main.py - Entry point of the application
+* session.py - Manages the user login session
+* database/ - Database connection and configuration
+* repository Module - Handle SQL operation and data access
+* service module - Contains business logic, validations and error handling
+>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+## 11. Software License Agreement
+
+## 12. Known Issues and Limitations
+
+* The system does not support concurrent user access.
+* The application is console-based only (no graphical interface).
+* No automated email or notification mechanism implemented
+
+*These limitations do not affect core system functionality
+
+## Credits
+
+Developer: Pallage Ganuke Achiranath Perera
+Student ID: 270842427
+Course: Master of Software Engineering
+Institution: YooBee College
+Year: 2026
+
+
 
  
 
