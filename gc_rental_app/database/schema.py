@@ -14,7 +14,7 @@ class SchemaHandler:
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             fullname TEXT NOT NULL,
             username VARCHAR(50) UNIQUE NOT NULL,
-            password TEXT NOT NULL,
+            password VARCHAR(255) NOT NULL,
             mobile VARCHAR(15),
             role INTEGER NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -74,4 +74,4 @@ class SchemaHandler:
 
         if not exists:
             db.execute(
-            "INSERT INTO users (fullname, username, password, role) VALUES (?, ?, ?, ?)", ("superadmin", "superadmin", "1234", UserRole.SUPER_ADMIN.value) ) 
+            "INSERT INTO users (fullname, username, password, role) VALUES (?, ?, ?, ?)", ("superadmin", "superadmin", "$2b$12$RDUIHEl327lBsoWJbLaLE.bi.FulZ3Z7wrv8F4FVbnlxHVd5uhoU2", UserRole.SUPER_ADMIN.value) ) 

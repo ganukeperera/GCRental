@@ -27,8 +27,8 @@ class AuthService():
     def login(self, username, password):
         """Authenticate a user"""
         try:
-            user = self.__repo.select_user(username)
-            if (user is None) or (user.password != password):
+            user = self.__repo.authenticate(username, password)
+            if user is None:
                 raise InvalidLogin("Wrong Credentials")
             
             return user
