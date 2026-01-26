@@ -203,6 +203,14 @@ File Purpose Overview
 
 ## 11. Software License Agreement
 
+This project is released under the MIT License.
+
+The MIT License permits anyone to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the software, provided that the original copyright notice and license are included.
+
+The software is provided "as is", without warranty of any kind.
+
+For full license terms, refer to the LICENSE file included in this project.
+
 ## 12. Known Issues and Limitations
 
 * The system does not support concurrent user access.
