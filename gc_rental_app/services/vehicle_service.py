@@ -5,7 +5,7 @@ from datetime import date
 from repositories.vehicle_repository import VehicleRepository
 from repositories.entities.vehicle import Vehicle
 from repositories.entities.user import User
-from exceptions import VehicleAlreadyExist, VehicleNotFound
+from utils.exceptions import VehicleAlreadyExist, VehicleNotFound
 from .authorization_service import AuthorizationService
 
 logger = logging.getLogger(__name__)

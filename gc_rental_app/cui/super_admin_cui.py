@@ -1,13 +1,13 @@
 """Super Admin CUI"""
 
-from utils import get_valid_input, draw_box, clear_screen
 import configs.strings
 from configs.app_constants import USER_NAME_POLICY_STRING, MIN_USERNAME_LENGTH, MIN_PASSWORD_LENGTH, PASSWORD_POLICY_STRING, UserRole
 from services.auth_service import AuthService
 from services.authorization_service import AuthorizationService
-from exceptions import UserRegistrationError
+from utils.exceptions import UserRegistrationError
 from .session import Session
 from .cui import CUI
+from .cui_helper import get_valid_input, draw_box, clear_screen
 
 class SuperAdminCUI(CUI):
     """CUI related to Super Admin"""

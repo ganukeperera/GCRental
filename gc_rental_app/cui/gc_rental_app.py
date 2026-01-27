@@ -5,12 +5,9 @@ import configs.strings
 from services.auth_service import AuthService
 from services.vehicle_service import VehicleService
 from services.bookings_service import BookingService
-from utils import get_valid_input, draw_box, clear_screen
-from exceptions import InvalidLogin, UserRegistrationError
+from cui.cui_helper import get_valid_input, draw_box, clear_screen
+from utils.exceptions import InvalidLogin, UserRegistrationError
 from configs.app_constants import USER_NAME_POLICY_STRING, MIN_USERNAME_LENGTH, MIN_PASSWORD_LENGTH, PASSWORD_POLICY_STRING, UserRole
-from .admin_cui import AdminCUI
-from .super_admin_cui import SuperAdminCUI
-from .user_cui import UserCUI
 from .session import Session
 from .cui_factory import CUIFactory
 

@@ -1,12 +1,12 @@
 """User CUI"""
 
 import logging
-from utils import get_valid_input, clear_screen, draw_box, get_date_input, print_table
 import configs.strings
 from repositories.entities.booking import Booking
 from services.vehicle_service import VehicleService
 from services.bookings_service import BookingService
-from cui.session import Session
+from .cui_helper import get_valid_input, clear_screen, draw_box, get_date_input, print_table
+from .session import Session
 from .cui import CUI
 
 logger = logging.getLogger(__name__)

@@ -3,7 +3,7 @@
 import logging
 from repositories.entities.user import User
 from repositories.user_repository import UserRepo
-from exceptions import UserRegistrationError, InvalidLogin, LoginError
+from utils.exceptions import UserRegistrationError, InvalidLogin, LoginError
 
 logger = logging.getLogger(__name__)
 

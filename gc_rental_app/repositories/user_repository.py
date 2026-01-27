@@ -1,7 +1,7 @@
 """User Repository"""
 
 import logging
-from password_hasher import PasswordHasher
+from utils.password_hasher import PasswordHasher
 from database.database_handler import DatabaseHandler
 from .entities.user import User
 

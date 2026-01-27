@@ -1,11 +1,11 @@
 """Admin CUI"""
 
-from utils import get_valid_input, print_table, draw_box, clear_screen
+from cui.cui_helper import get_valid_input, print_table, draw_box, clear_screen
 from repositories.entities.vehicle import Vehicle
 import configs.strings
 from services.vehicle_service import VehicleService
 from services.bookings_service import BookingService
-import exceptions
+import utils.exceptions as exceptions
 from .session import Session
 from .cui import CUI
 

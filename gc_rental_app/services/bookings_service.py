@@ -8,7 +8,7 @@ from repositories.entities.booking import Booking
 from repositories.bookings_repository import BookingsRepository
 from repositories.vehicle_repository import VehicleRepository
 from configs.app_constants import BookingStatus, ANALYTICS_DEMAND_PERIOD
-from exceptions import BookingNotFound
+from utils.exceptions import BookingNotFound
 from .authorization_service import AuthorizationService
 from .booking_analytics_service import BookingAnalyticsService
 
