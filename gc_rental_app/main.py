@@ -4,6 +4,7 @@ import logging
 from services.auth_service import AuthService
 from services.vehicle_service import VehicleService
 from services.bookings_service import BookingService
+from services.booking_analytics_service import BookingAnalyticsService
 from database.sqlite_db_handler import SQLiteDBHandler
 from database.schema import SchemaHandler
 from cui.gc_rental_app import GCRentalApp
@@ -33,7 +34,8 @@ def main():
     # Used dependency injection to initialize service layer with required dependencies
     auth_service = AuthService(user_repo)
     vehicle_service = VehicleService(vehicle_repo)
-    bookings_service = BookingService(booking_repo, vehicle_repo)
+    analytics_service = BookingAnalyticsService(booking_repo)
+    bookings_service = BookingService(booking_repo, vehicle_repo, analytics_service)
     
     # Show Initial Menu
     rental_app = GCRentalApp(

@@ -158,7 +158,7 @@ class VehicleService:
                 return False
 
             # Check overlapping bookings
-            if self.__vehicle_repo.is_vehicle_booked(vehicle.id, start_date, end_date):
+            if self.__vehicle_repo.is_vehicle_booked(vehicle.vehicle_id, start_date, end_date):
                 logger.info("Vehicle %s is already booked and not available for the period from %s to %s.",
                 vehicle.plate_number, start_date, end_date)
                 return False

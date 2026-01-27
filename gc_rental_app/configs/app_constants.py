@@ -15,6 +15,8 @@ USER_NAME_POLICY_STRING = f"Minimum length of the username is {MIN_USERNAME_LENG
 MIN_PASSWORD_LENGTH = 4
 PASSWORD_POLICY_STRING = f"Minimum length of the password is {MIN_PASSWORD_LENGTH}"
 
+ANALYTICS_DEMAND_PERIOD = 7
+
 class UserRole(Enum):
     """Define the enum for the user roles"""
     SUPER_ADMIN = 0

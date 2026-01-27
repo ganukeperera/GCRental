@@ -7,18 +7,24 @@ from repositories.entities.vehicle import Vehicle
 from repositories.entities.booking import Booking
 from repositories.bookings_repository import BookingsRepository
 from repositories.vehicle_repository import VehicleRepository
-from configs.app_constants import BookingStatus
+from configs.app_constants import BookingStatus, ANALYTICS_DEMAND_PERIOD
 from exceptions import BookingNotFound
 from .authorization_service import AuthorizationService
+from .booking_analytics_service import BookingAnalyticsService
 
 logger = logging.getLogger(__name__)
 
 class BookingService:
     """Service responsible to handle Booking related business logics"""
 
-    def __init__(self, booking_repo: BookingsRepository, vehicle_repo: VehicleRepository):
+    def __init__(self,
+                 booking_repo: BookingsRepository,
+                 vehicle_repo: VehicleRepository,
+                 analytics_service: BookingAnalyticsService
+                 ):
         self.__booking_repo = booking_repo
         self.__vehicle_repo = vehicle_repo
+        self.__analytics_service = analytics_service
 
     def add_booking(self, user: User, booking: Booking):
         """Service method to add a booking"""
@@ -71,7 +77,7 @@ class BookingService:
 
         except Exception:
             logger.exception(
-                "Failed to retrieve bookings for user_id=%s", user.id
+                "Failed to retrieve bookings for user_id=%s", user.user_id
             )
             raise
 
@@ -83,7 +89,7 @@ class BookingService:
             return False
 
         # Repo method checks overlapping bookings
-        return not self.__vehicle_repo.is_vehicle_booked(vehicle.id, start_date, end_date)
+        return not self.__vehicle_repo.is_vehicle_booked(vehicle.vehicle_id, start_date, end_date)
 
     def get_pending_bookings(self, user: User):
         """Service method to return pending bookings"""
@@ -124,15 +130,15 @@ class BookingService:
                     f"Cannot {status.value} booking with status: {booking.status}"
                 )
 
-            self.__booking_repo.update_status(
+            self.__booking_repo.update_booking_status(
                 booking_id,
-                status.value
+                status
             )
 
         except PermissionError:
             logger.exception(
                 "Changing booking status to %s failed. User not authorized. user_id=%s",
-                status.value, user.id
+                status.value, user.user_id
             )
             raise
 
@@ -190,7 +196,7 @@ class BookingService:
 
             # Update vehicle mileage
             self.__vehicle_repo.update_vehicle_mileage(
-                vehicle.id,
+                vehicle.vehicle_id,
                 new_mileage
             )
 
@@ -210,3 +216,15 @@ class BookingService:
         except Exception:
             logger.exception("Complete booking failed: %s")
             raise
+
+    def calculate_price(self, vehicle: Vehicle, start_date, end_date):
+        """Calculate the price dynamically based on the analysis of booking data"""
+
+        base_price = vehicle.daily_rate
+        days = (end_date - start_date).days + 1
+
+        demand_multiplier = self.__analytics_service.calculate_demand_factor(vehicle.vehicle_id, start_date, ANALYTICS_DEMAND_PERIOD)
+
+        final_price = base_price * days * demand_multiplier
+
+        return final_price

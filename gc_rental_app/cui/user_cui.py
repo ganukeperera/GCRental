@@ -79,7 +79,7 @@ class UserCUI(CUI):
                 headers = ["ID", "Plate", "Make", "Model", "Year", "Rate($/day)", "Min Days", "Max Days"]
                 rows = [
                     [
-                        v.id,
+                        v.vehicle_id,
                         v.plate_number,
                         v.make,
                         v.model,
@@ -102,16 +102,16 @@ class UserCUI(CUI):
                 
                 # Select vehicle
                 vehicle_id = int(input("Enter Vehicle ID to book: ").strip())
-                selected_vehicle = next((v for v in vehicles if v.id == vehicle_id), None)
+                selected_vehicle = next((v for v in vehicles if v.vehicle_id == vehicle_id), None)
                 if not selected_vehicle:
                     print("Invalid vehicle ID selected.")
                     input("Press Enter to continue...")
                     return
                 
                 # Confirm booking period
-                print(f"You selected {selected_vehicle.make} {selected_vehicle.model}")
+                print(f"You selected: {selected_vehicle.make} {selected_vehicle.model}")
                 print(f"Booking period: {start_date} to {end_date} ({requested_days} days)")
-                total_cost = selected_vehicle.daily_rate * requested_days
+                total_cost = self.__booking_service.calculate_price(selected_vehicle, start_date, end_date)
                 print(f"Total cost: ${total_cost:.2f}")
 
                 confirm = input("Confirm booking? (Y/N): ").strip().lower()
@@ -121,19 +121,18 @@ class UserCUI(CUI):
                 
                 # Create booking
                 booking = Booking(
-                    user_id=self.__session.current_user.id,
-                    vehicle_id=selected_vehicle.id,
+                    user_id=self.__session.current_user.user_id,
+                    vehicle_id=selected_vehicle.vehicle_id,
                     start_date=start_date,
                     end_date=end_date,
                     status="pending",
                     total_cost=total_cost
                 )
                 self.__booking_service.add_booking(self.__session.current_user, booking)
-                print(f"Booking successful! Booking ID: {booking.id}")
-                input("Press Enter to continue...")
+                print(f"Booking successful! Your Booking Reference is: {booking.id}")
                 
-        except Exception:
-            print("Failed to retrieve available vehicles. Please try again later.")
+        except Exception as e:
+            print("Failed to retrieve available vehicles. Please try again later. %s",e)
         finally:
             input("Press Enter to continue...")
 

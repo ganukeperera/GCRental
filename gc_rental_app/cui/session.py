@@ -7,7 +7,7 @@ class Session:
     def __init__(self):
         self.__current_user = None
 
-    def login(self, user):
+    def login(self, user: User):
         """Mange login"""
         self.__current_user = user
 
