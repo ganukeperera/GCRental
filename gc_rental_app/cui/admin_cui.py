@@ -16,13 +16,14 @@ class AdminCUI(CUI):
     __menu = [
                 "1. Manage Cars",
                 "2. Manage Bookings",
-                "3. Logout",
+                "3. Reports",
+                "4. Logout",
             ]
 
     __cars_menu = [
                 "1. Add New Cars", 
                 "2. Update Car Details", 
-                "3. Remove CarB", 
+                "3. Remove Car", 
                 "4. View All Cars",
                 "5. Go Back",
             ]
@@ -33,6 +34,11 @@ class AdminCUI(CUI):
                 "3. Complete Booking",
                 "4. Go Back",
             ]
+    
+    __report_menu = [
+            "1. Revenue Report",
+            "2. Go Back"
+        ]
 
     def __init__(
             self,
@@ -62,6 +68,8 @@ class AdminCUI(CUI):
             elif choose == 2:
                 self.__show_manage_bookings()
             elif choose == 3:
+                self.__show_reports()
+            elif choose == 4:
                 self.__session.logout()
                 break
             else:
@@ -90,6 +98,43 @@ class AdminCUI(CUI):
                 self.__show_all_vehicles()
             elif choose == 5:
                 break
+
+    def __show_reports(self):
+        """Show manage cars menu"""
+        while True:
+            clear_screen()
+            draw_box("Reports")
+            for item in self.__report_menu:
+                print(item)
+            print()
+            choose = get_valid_input(
+                prompt="Choose : ",
+                cast_func=int,
+                validator= lambda x: 1<=x<=len(self.__cars_menu)
+            )
+            if choose == 1:
+                self.__show_monthly_revenue()
+            elif choose == 2:
+                break
+
+    def __show_monthly_revenue(self):
+        "Show monthly revenue report"
+        clear_screen()
+        draw_box("Revenue Report")
+        try:
+            headers = ["Month", "Revenue ($)"]
+            rows = self.__booking_service.get_monthly_revenue(self.__session.current_user)
+            print_table(headers, rows)
+            
+        except PermissionError:
+            print("User not authorized")
+        except ValueError as e:
+            print(e)
+        except Exception:
+            print("Add vehicle failed! Please try again later")
+        finally:
+            input("Press Enter to continue...")
+
     
     def __show_add_car(self):
         "Adding Cars to the inventory"
@@ -364,12 +409,11 @@ class AdminCUI(CUI):
             print_table(headers, rows)
 
             # Ask admin if they want to take action
-            choice = input("\nDo you want to approve or reject a booking? (Y/N): ").strip().lower()
+            choice = get_valid_input("Do you want to approve or reject a booking? (y/n): ", lambda x: (x in ("y", "n")))
             if choice != "y":
                 return
-
             # Get booking ID
-            booking_id = int(input("Enter Booking ID: ").strip())
+            booking_id = get_valid_input("Enter Booking ID: ", int)
 
             selected_booking = next(
                 (b for b in pending_bookings if b.id == booking_id), None
@@ -379,7 +423,7 @@ class AdminCUI(CUI):
                 return
 
             # Approve or reject
-            action = input("Approve or Reject? (A/R): ").strip().lower()
+            action = get_valid_input("Approve or Reject? (a/r): ", validator= lambda x: x in ("a", "r"))
             if action == "a":
                 self.__booking_service.approve_booking(self.__session.current_user, booking_id)
                 print(f"Booking {booking_id} approved successfully.")
@@ -416,7 +460,7 @@ class AdminCUI(CUI):
             # Step 2: Display bookings
             headers = [
                 "Booking ID",
-                "User Name",
+                "User ID",
                 "Vehicle ID",
                 "Start Date",
                 "End Date",
@@ -426,7 +470,7 @@ class AdminCUI(CUI):
             rows = [
                 [
                     b.id,
-                    b.user_full_name,
+                    b.user_id,
                     b.vehicle_id,
                     b.start_date,
                     b.end_date,
@@ -436,15 +480,10 @@ class AdminCUI(CUI):
             ]
 
             print_table(headers, rows)
-
-            # Step 3: Ask admin if they want to complete a booking
-            choice = input("\nDo you want to complete any booking? (Y/N): ").strip().lower()
-            if choice != "y":
-                print("No booking completed.")
-                return
+            print()
 
             # Step 4: Select booking
-            booking_id = int(input("Enter Booking ID to complete: ").strip())
+            booking_id = get_valid_input("Enter Booking ID you want to complete: ", int)
 
             booking = next((b for b in bookings if b.id == booking_id), None)
             if not booking:
@@ -452,36 +491,35 @@ class AdminCUI(CUI):
                 return
 
             # Step 5: Additional charges
-            add_charge_choice = input(
-                "Any additional charges? (Y/N): "
-            ).strip().lower()
 
-            additional_charge = 0
-            if add_charge_choice == "y":
-                additional_charge = float(
-                    input("Enter additional charge amount: ").strip()
-                )
-                if additional_charge < 0:
-                    print("Additional charge cannot be negative.")
-                    return
+            additional_charge = get_valid_input("Enter additional charge amount if applicable: ", float, default=0.0)
+            if additional_charge < 0:
+                print("Additional charge cannot be negative.")
+                return
+            
+            # Step 6: Get new mileage
+            new_mileage = get_valid_input("Enter new mileage of the car: ", int)
 
-            # Step 6: Complete booking
+            # Step 7: Complete booking
             self.__booking_service.complete_booking(
                 self.__session.current_user,
                 booking_id,
+                new_mileage,
                 additional_charge
             )
 
+            updated_booking = self.__booking_service.get_booking_by_id(self.__session.current_user, booking.id)
+
             print(
-                f"Booking {booking_id} completed successfully.\n"
-                f"Additional Charges: ${additional_charge:.2f}"
+                f"\nBooking {booking_id} completed successfully.\n"
+                f"Total Rental Charges = ${updated_booking.total_cost:.2f}"
             )
 
         except PermissionError:
             print("You are not authorized to complete bookings.")
-        except ValueError:
-            print("Invalid input. Please enter valid numbers.")
-        except Exception:
-            print("Failed to complete booking. Please try again later.")
+        except ValueError as e:
+            print(e)
+        except Exception as e:
+            print("Failed to complete booking. Please try again later. %s", e)
         finally:
             input("Press Enter to continue...")

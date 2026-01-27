@@ -20,15 +20,16 @@ class BookingAnalyticsService:
             "vehicle_id": b.vehicle_id,
             "start_date": b.start_date,
             "end_date": b.end_date,
-            "total_cost": b.total_cost
+            "total_cost": b.total_cost,
+            "status": b.status
         } for b in bookings])
 
         if not df.empty:
             df["start_date"] = pd.to_datetime(df["start_date"])
+            df["month"] = df["start_date"].dt.to_period("M")
 
         return df
 
-    # 
     def calculate_demand_factor(self,
                                 vehicle_id: str,
                                 start_date: date,
@@ -68,3 +69,14 @@ class BookingAnalyticsService:
             return 1.1
         else:
             return 1.0
+
+    def get_monthly_revenue(self):
+        """Generate monthly revenue report"""
+
+        df = self._build_dataframe()
+        df = df[df["status"] == "completed"]
+        revenue = df.groupby("month")["total_cost"].sum().sort_index(ascending=True)
+        rows = [[str(month), f"{amount:.2f}"]
+            for month, amount in revenue.items()
+            ]
+        return rows

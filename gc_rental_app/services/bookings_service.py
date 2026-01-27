@@ -171,6 +171,21 @@ class BookingService:
             logger.exception("Failed to retrieve all bookings")
             raise
 
+    def get_booking_by_id(self, user, booking_id) -> Booking:
+        """view all bookings"""
+        try:
+            AuthorizationService.require_admin(user)
+            
+            return self.__booking_repo.get_by_booking_id(booking_id=booking_id)
+
+        except PermissionError:
+            logger.exception("View all bookings failed.")
+            raise
+
+        except Exception:
+            logger.exception("Failed to retrieve all bookings")
+            raise
+
     def complete_booking(self, admin_user, booking_id, new_mileage, additional_charge):
         """Complete booking"""
         try:
@@ -180,7 +195,7 @@ class BookingService:
             if not booking:
                 raise ValueError("Booking not found")
 
-            if booking.status != BookingStatus.APPROVED:
+            if booking.status != BookingStatus.APPROVED.value:
                 raise ValueError("Only approved bookings can be completed")
 
             vehicle = self.__vehicle_repo.get_by_id(booking.vehicle_id)
@@ -189,22 +204,20 @@ class BookingService:
 
             # Mileage validation
             if new_mileage < vehicle.mileage:
-                raise ValueError("New mileage cannot be less than current mileage")
+                raise ValueError("New mileage cannot be less than current mileage - {vehicle.mileage}")
 
             # Calculate final total
             final_total = booking.total_cost + additional_charge
+
+            # Complete booking
+            booking.total_cost = final_total
+            booking.status = BookingStatus.COMPLETED.value
+            self.__booking_repo.update(booking)
 
             # Update vehicle mileage
             self.__vehicle_repo.update_vehicle_mileage(
                 vehicle.vehicle_id,
                 new_mileage
-            )
-
-            # Complete booking
-            self.__booking_repo.update_booking_completion(
-                booking_id=booking_id,
-                total_cost=final_total,
-                status=BookingStatus.COMPLETED
             )
 
         except PermissionError:
@@ -228,3 +241,21 @@ class BookingService:
         final_price = base_price * days * demand_multiplier
 
         return final_price
+    
+    def get_monthly_revenue(self, user: User):
+        """Calculate Monthly Revenue"""
+        try:
+            AuthorizationService.require_admin(user)
+            revenue = self.__analytics_service.get_monthly_revenue()
+            if not revenue:
+                raise ValueError("No valid data found to generate the report!")
+            return revenue
+        except PermissionError:
+            logger.exception("Complete booking failed: %s")
+            raise
+        except ValueError:
+            logger.exception("Complete booking validation failed: %s")
+            raise
+        except Exception:
+            logger.exception("Complete booking failed: %s")
+            raise

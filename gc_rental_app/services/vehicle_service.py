@@ -106,6 +106,21 @@ class VehicleService:
         except Exception as e:
             logger.error("Search vehicle Failed!. %s", e)
             raise
+    
+    def get_vehicle_by_id(self, vehicle_id) -> Vehicle:
+        """Service to check the existence of a vehicle"""
+
+        try:
+            vehicle = self.__vehicle_repo.get_by_id(vehicle_id)
+            if vehicle is None:
+                raise VehicleNotFound(f"Vehicle with id not found: {vehicle_id}" )
+            return vehicle
+        except VehicleNotFound as e:
+            logger.error("Search vehicle Failed!: %s", e)
+            raise
+        except Exception as e:
+            logger.error("Search vehicle Failed!. %s", e)
+            raise
 
     def list_available_vehicles(self, start_date: date, end_date: date):
         """List vehicles available for booking in the given date range"""

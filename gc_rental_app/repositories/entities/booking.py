@@ -52,7 +52,16 @@ class Booking:
     @property
     def status(self):
         return self.__status
+    
+    @status.setter
+    def status(self, value):
+        self.__status = value
 
     @property
     def total_cost(self):
         return self.__total_cost
+    
+    @total_cost.setter
+    def total_cost(self, value):
+        self.__total_cost = value
+

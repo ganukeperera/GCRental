@@ -60,6 +60,24 @@ class BookingsRepository:
 
         return bookings
 
+    def update(
+        self,
+        booking: Booking,
+    ) -> bool:
+        """Update the booking into a different status"""
+
+        cursor = self.__db.execute(
+            """
+            UPDATE bookings
+            SET status = ?,
+            total_cost = ?
+            WHERE id = ?
+            """,
+            (booking.status, booking.total_cost, booking.id)
+        )
+
+        return cursor.rowcount > 0
+    
     def update_booking_status(
             self,
             booking_id: int,

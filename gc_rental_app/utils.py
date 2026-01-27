@@ -17,7 +17,7 @@ def get_valid_input(
     """Validate user input"""
     while True:
         full_prompt = prompt
-        if default:
+        if default is not None:
             full_prompt += f"[{default}] "
         user_input = input(full_prompt).strip()
 
