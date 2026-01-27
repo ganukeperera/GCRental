@@ -30,6 +30,7 @@ class SQLiteDBHandler(DatabaseHandler):
                 timeout = 5.0
             )
             self._connection.row_factory = sqlite3.Row
+            self._connection.execute("PRAGMA foreign_keys = ON")
             SQLiteDBHandler.logger.info("SQLite DB connection done")
         return self._connection
 

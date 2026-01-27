@@ -38,14 +38,14 @@ class SchemaHandler:
     BOOKING_TABLE_SCHEMA = """
         CREATE TABLE IF NOT EXISTS bookings (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER NOT NULL,
-            vehicle_id INTEGER NOT NULL,
+            user_id INTEGER,
+            vehicle_id INTEGER,
             start_date DATE NOT NULL,
             end_date DATE NOT NULL,
             status TEXT DEFAULT 'pending' CHECK(status IN ('pending', 'approved', 'rejected', 'completed')),
             total_cost DECIMAL(10, 2),
-            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-            FOREIGN KEY (vehicle_id) REFERENCES vehicles(id) ON DELETE CASCADE
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
+            FOREIGN KEY (vehicle_id) REFERENCES vehicles(id) ON DELETE SET NULL
         )
     """
 
