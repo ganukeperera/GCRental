@@ -94,8 +94,11 @@ class UserCUI(CUI):
 
                 print()
                 # Ask to continue booking
-                cont = input("Do you want to continue booking? (Y/N): ").strip().lower()
-                if cont != "y":
+                cont = get_valid_input(
+                    "Do you want to continue booking? (y/n): ",
+                    validator= lambda x: x in ("y", "n","Y", "N")
+                )
+                if cont != "y" or cont != "Y":
                     print("Booking cancelled.")
                     logger.info("User cancel booking")
                     return
@@ -114,7 +117,10 @@ class UserCUI(CUI):
                 total_cost = self.__booking_service.calculate_price(selected_vehicle, start_date, end_date)
                 print(f"Total cost: ${total_cost:.2f}")
 
-                confirm = input("Confirm booking? (Y/N): ").strip().lower()
+                confirm = get_valid_input(
+                    "Confirm this booking? (y/n): ",
+                    validator= lambda x: x in ("y", "Y", "n", "N")
+                )
                 if confirm != "y":
                     print("Booking cancelled.")
                     return

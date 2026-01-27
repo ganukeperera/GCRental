@@ -119,3 +119,5 @@ class GCRentalApp:
             print("User Registration completed!")
         except UserRegistrationError:
             print(configs.strings.REGISTRATION_FAILED)
+        finally:
+            input("Press ENTER to continue...")

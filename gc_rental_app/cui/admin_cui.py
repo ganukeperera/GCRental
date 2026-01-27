@@ -165,7 +165,6 @@ class AdminCUI(CUI):
             existing_vehicle = self.__vehicle_service.get_vehicle_by_plate(plate)
             print("Press Enter to keep existing values")
             updated_vehicle = self.__collect_vehicle_input(existing_vehicle)
-            print(updated_vehicle.year)
             self.__vehicle_service.update_vehicle(self.__session.current_user, updated_vehicle)
             print("Vehicle updated successfully")
 
@@ -409,11 +408,17 @@ class AdminCUI(CUI):
             print_table(headers, rows)
 
             # Ask admin if they want to take action
-            choice = get_valid_input("Do you want to approve or reject a booking? (y/n): ", lambda x: (x in ("y", "n")))
-            if choice != "y":
+            choice = get_valid_input(
+                "Do you want to approve or reject a booking? (y/n): ",
+                lambda x: (x in ("y", "n", "Y", "N"))
+            )
+            if choice != "y" or choice != "Y":
                 return
             # Get booking ID
-            booking_id = get_valid_input("Enter Booking ID: ", int)
+            booking_id = get_valid_input(
+                "Enter Booking ID: ",
+                int
+            )
 
             selected_booking = next(
                 (b for b in pending_bookings if b.id == booking_id), None
@@ -423,8 +428,11 @@ class AdminCUI(CUI):
                 return
 
             # Approve or reject
-            action = get_valid_input("Approve or Reject? (a/r): ", validator= lambda x: x in ("a", "r"))
-            if action == "a":
+            action = get_valid_input(
+                "Approve or Reject? (a/r): ",
+                validator= lambda x: x in ("a", "r", "A", "R")
+            )
+            if action == "a" or action == "A":
                 self.__booking_service.approve_booking(self.__session.current_user, booking_id)
                 print(f"Booking {booking_id} approved successfully.")
 
@@ -483,7 +491,10 @@ class AdminCUI(CUI):
             print()
 
             # Step 4: Select booking
-            booking_id = get_valid_input("Enter Booking ID you want to complete: ", int)
+            booking_id = get_valid_input(
+                "Enter Booking ID you want to complete: ",
+                int
+            )
 
             booking = next((b for b in bookings if b.id == booking_id), None)
             if not booking:
@@ -492,13 +503,20 @@ class AdminCUI(CUI):
 
             # Step 5: Additional charges
 
-            additional_charge = get_valid_input("Enter additional charge amount if applicable: ", float, default=0.0)
+            additional_charge = get_valid_input(
+                "Enter additional charge amount if applicable: ",
+                float,
+                default=0.0
+            )
             if additional_charge < 0:
                 print("Additional charge cannot be negative.")
                 return
             
             # Step 6: Get new mileage
-            new_mileage = get_valid_input("Enter new mileage of the car: ", int)
+            new_mileage = get_valid_input(
+                "Enter new mileage of the car: ",
+                int
+            )
 
             # Step 7: Complete booking
             self.__booking_service.complete_booking(
