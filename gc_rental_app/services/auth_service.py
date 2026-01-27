@@ -3,7 +3,7 @@
 import logging
 from repositories.entities.user import User
 from repositories.user_repository import UserRepo
-from utils.exceptions import UserRegistrationError, InvalidLogin, LoginError
+from utils.exceptions import UserRegistrationError, InvalidLogin, LoginError, UserNameNotAvailable
 
 logger = logging.getLogger(__name__)
 
@@ -17,9 +17,16 @@ class AuthService():
         """Register new User"""
 
         try:
+            check_available = self.__repo.select_user(username)
+            if check_available is not None:
+                raise UserNameNotAvailable("Username already exist in the system")
             user = User(fullname, username, password, mobile, role)
             self.__repo.add_user(user)
             logger.info("User %s registered successfully", fullname)
+        
+        except UserNameNotAvailable:
+            logger.error("Username not available. username = %s", username)
+            raise
         except Exception as e:
             logger.error("Error occurred while registering user %s, error: %s", fullname, e)
             raise UserRegistrationError("Error occurred while registering user") from e

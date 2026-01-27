@@ -46,14 +46,14 @@ class UserCUI(CUI):
                 error_message=configs.strings.INVALID_INPUT
             )
             if choose == 1:
-                self.show_book_car()
+                self.__show_book_car()
             elif choose == 2:
-                self.view_my_bookings()
+                self.__view_my_bookings()
             elif choose == 3:
                 self.__session.logout()
                 break
 
-    def show_book_car(self):
+    def __show_book_car(self):
         """List all the cars available for given period and allow booking"""
 
         clear_screen()
@@ -138,11 +138,12 @@ class UserCUI(CUI):
                 print(f"Booking successful! Your Booking Reference is: {booking.id}")
                 
         except Exception as e:
-            print("Failed to retrieve available vehicles. Please try again later. %s",e)
+            logging.exception("Unexpected error occurred!!! error = %s", e)
+            print("Failed to retrieve available vehicles. Please try again later!")
         finally:
             input("Press Enter to continue...")
 
-    def view_my_bookings(self):
+    def __view_my_bookings(self):
         """Return all bookings for the logged-in user"""
 
         clear_screen()
@@ -179,10 +180,8 @@ class UserCUI(CUI):
 
         except PermissionError:
             print("You are not authorized to view bookings.")
-            input("Press Enter to continue...")
         except Exception as e:
-            print("Failed to load bookings. Please try again later.", e)
-            input("Press Enter to continue...")
+            logging.exception("Unexpected error occurred!!! error = %s", e)
         finally:
             input("Press Enter to continue...")
             

@@ -50,17 +50,17 @@ class BookingService:
             )
 
         except PermissionError:
-            logger.exception("Booking failed")
+            logger.exception("Booking failed. User not authorized!")
             raise
 
-        except ValueError:
-            logger.exception("Booking failed")
+        except ValueError as e:
+            logger.exception("Booking failed %s", e)
             raise
 
-        except Exception:
+        except Exception as e:
             logger.exception(
-                "Unexpected error while creating booking for user_id=%s, vehicle_id=%s",
-                booking.user_id, booking.vehicle_id
+                "Unexpected error while creating booking for user_id=%s, vehicle_id=%s, error= %s",
+                booking.user_id, booking.vehicle_id, e
             )
             raise
     
@@ -75,33 +75,44 @@ class BookingService:
             logger.exception("View bookings failed.")
             raise
 
-        except Exception:
+        except Exception as e:
             logger.exception(
-                "Failed to retrieve bookings for user_id=%s", user.user_id
+                "Failed to retrieve bookings for user_id=%s, error: %s", user.user_id, e
             )
             raise
 
     def __check_vehicle_availability(self, vehicle: Vehicle, start_date: date, end_date: date) -> bool:
         """Check if a vehicle is available for booking considering min/max rent period"""
-        requested_days = (end_date - start_date).days + 1
+        try:
+            requested_days = (end_date - start_date).days + 1
 
-        if requested_days < vehicle.min_rent_period or requested_days > vehicle.max_rent_period:
-            return False
+            if requested_days < vehicle.min_rent_period or requested_days > vehicle.max_rent_period:
+                return False
 
-        # Repo method checks overlapping bookings
-        return not self.__vehicle_repo.is_vehicle_booked(vehicle.vehicle_id, start_date, end_date)
+            # Repo method checks overlapping bookings
+            return not self.__vehicle_repo.is_vehicle_booked(vehicle.vehicle_id, start_date, end_date)
+        except Exception as e:
+            logger.exception("Check vehicle availability failed! %s", e)
+            raise
 
     def get_pending_bookings(self, user: User):
         """Service method to return pending bookings"""
         AuthorizationService.require_admin(user)
-
-        return self.__booking_repo.get_bookings_by_status(BookingStatus.PENDING)
+        try:
+            return self.__booking_repo.get_bookings_by_status(BookingStatus.PENDING)
+        except Exception as e:
+            logger.exception("Getting pending bookings failed! %s", e)
+            raise
 
     def get_approved_bookings(self, user: User):
         """Service method to return approved bookings"""
         AuthorizationService.require_admin(user)
+        try:
+            return self.__booking_repo.get_bookings_by_status(BookingStatus.APPROVED)
+        except Exception as e:
+            logger.exception("Getting approved bookings failed! %s", e)
+            raise
 
-        return self.__booking_repo.get_bookings_by_status(BookingStatus.APPROVED)
 
     def approve_booking(self, user: User, booking_id: int):
         """Approve a pending booking"""
@@ -142,17 +153,16 @@ class BookingService:
             )
             raise
 
-        except ValueError:
+        except ValueError as e:
             logger.exception(
-                "Changing booking status to %s failed. booking_id=%s",
-                status.value, booking_id
+                "Changing booking status to %s failed. booking_id=%s, error= %s",
+                status.value, booking_id, e
             )
             raise
-
-        except Exception:
+        except Exception as e:
             logger.exception(
-                "Unexpected error while changing booking status to %s. booking_id=%s",
-                status.value, booking_id
+                "Unexpected error while changing booking status to %s. booking_id=%s. error = %s",
+                status.value, booking_id, e
             )
             raise
 
@@ -163,12 +173,12 @@ class BookingService:
             
             return self.__booking_repo.get_all()
 
-        except PermissionError:
-            logger.exception("View all bookings failed.")
+        except PermissionError as e:
+            logger.exception("View all bookings failed.%s", e)
             raise
 
-        except Exception:
-            logger.exception("Failed to retrieve all bookings")
+        except Exception as e:
+            logger.exception("Failed to retrieve all bookings. %s", e)
             raise
 
     def get_booking_by_id(self, user, booking_id) -> Booking:
@@ -178,12 +188,11 @@ class BookingService:
             
             return self.__booking_repo.get_by_booking_id(booking_id=booking_id)
 
-        except PermissionError:
-            logger.exception("View all bookings failed.")
+        except PermissionError as e:
+            logger.exception("View all bookings failed. %s", e)
             raise
-
-        except Exception:
-            logger.exception("Failed to retrieve all bookings")
+        except Exception as e:
+            logger.exception("Failed to retrieve all bookings. %s", e)
             raise
 
     def complete_booking(self, admin_user, booking_id, new_mileage, additional_charge):
@@ -220,14 +229,14 @@ class BookingService:
                 new_mileage
             )
 
-        except PermissionError:
-            logger.exception("Complete booking failed: %s")
+        except PermissionError as e:
+            logger.exception("Complete booking failed: %s", e)
             raise
-        except ValueError:
-            logger.exception("Complete booking validation failed: %s")
+        except ValueError as e:
+            logger.exception("Complete booking validation failed: %s", e)
             raise
-        except Exception:
-            logger.exception("Complete booking failed: %s")
+        except Exception as e:
+            logger.exception("Complete booking failed: %s", e)
             raise
 
     def calculate_price(self, vehicle: Vehicle, start_date, end_date):
@@ -250,12 +259,12 @@ class BookingService:
             if not revenue:
                 raise ValueError("No valid data found to generate the report!")
             return revenue
-        except PermissionError:
-            logger.exception("Complete booking failed: %s")
+        except PermissionError as e:
+            logger.exception("Complete booking failed: %s", e)
             raise
-        except ValueError:
-            logger.exception("Complete booking validation failed: %s")
+        except ValueError as e:
+            logger.exception("Complete booking validation failed: %s", e)
             raise
-        except Exception:
-            logger.exception("Complete booking failed: %s")
+        except Exception as e:
+            logger.exception("Complete booking failed: %s", e)
             raise

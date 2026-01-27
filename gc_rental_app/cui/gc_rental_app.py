@@ -1,15 +1,18 @@
 """CUI for the car rental app"""
 
+import logging
 import sys
 import configs.strings
 from services.auth_service import AuthService
 from services.vehicle_service import VehicleService
 from services.bookings_service import BookingService
 from cui.cui_helper import get_valid_input, draw_box, clear_screen
-from utils.exceptions import InvalidLogin, UserRegistrationError
+from utils.exceptions import InvalidLogin, UserRegistrationError, UserNameNotAvailable
 from configs.app_constants import USER_NAME_POLICY_STRING, MIN_USERNAME_LENGTH, MIN_PASSWORD_LENGTH, PASSWORD_POLICY_STRING, UserRole
 from .session import Session
 from .cui_factory import CUIFactory
+
+logger = logging.getLogger(__name__)
 
 class GCRentalApp:
     """Responsible to generate the UI"""
@@ -88,6 +91,9 @@ class GCRentalApp:
             cui.show_menu()
         except InvalidLogin:
             print("\n",configs.strings.INVALID_CREDENTIALS, sep="")
+        except Exception as e:
+            logging.exception("Unexpected error occurred!!! error = %s", e)
+        finally:
             input("Press ENTER to continue...")
 
     def show_register_screen(self):
@@ -117,7 +123,12 @@ class GCRentalApp:
             )
             self.__auth_service.register(fullname, username, password, mobile, UserRole.USER.value)
             print("User Registration completed!")
+        except UserNameNotAvailable:
+            print("Username not available to use. Please try again later!")
         except UserRegistrationError:
+            print(configs.strings.REGISTRATION_FAILED)
+        except Exception as e:
+            logging.exception("Unexpected error occurred!!! error = %s", e)
             print(configs.strings.REGISTRATION_FAILED)
         finally:
             input("Press ENTER to continue...")

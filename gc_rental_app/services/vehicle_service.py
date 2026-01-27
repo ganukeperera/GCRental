@@ -146,7 +146,6 @@ class VehicleService:
                 "Invalid date range: %s - %s. Error: %s", start_date, end_date, e
             )
             raise
-
         except Exception as e:
             logger.exception(
                 "Failed to retrieve available vehicles for dates: %s - %s. Error: %s",

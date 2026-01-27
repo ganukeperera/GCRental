@@ -82,6 +82,7 @@ class SQLiteDBHandler(DatabaseHandler):
         """Execute sql statement and returns all records found"""
 
         try:
+            SQLiteDBHandler.logger.debug("Start execution of the SQL command: %s", sql)
             cursor = self._connection.cursor()
             result = cursor.execute(sql, params)
             return result.fetchall()

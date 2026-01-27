@@ -29,3 +29,6 @@ class BookingNotFound(GCRentalException):
 
 class ViolateAllowedRentPeriod(GCRentalException):
     """Rent Min Max Period Violation"""
+
+class UserNameNotAvailable(GCRentalException):
+    """Vehicle Already exist"""

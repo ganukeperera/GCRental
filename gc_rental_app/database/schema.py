@@ -12,7 +12,7 @@ class SchemaHandler:
     USER_TABLE_SCHEMA = """
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            fullname TEXT NOT NULL,
+            fullname VARCHAR(255) NOT NULL,
             username VARCHAR(50) UNIQUE NOT NULL,
             password VARCHAR(255) NOT NULL,
             mobile VARCHAR(15),
@@ -24,9 +24,9 @@ class SchemaHandler:
     VEHICLE_TABLE_SCHEMA = """
         CREATE TABLE IF NOT EXISTS vehicles (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            plate_number TEXT UNIQUE NOT NULL,
-            make TEXT NOT NULL,
-            model TEXT NOT NULL,
+            plate_number VARCHAR(20) UNIQUE NOT NULL,
+            make VARCHAR(50) NOT NULL,
+            model VARCHAR(50) NOT NULL,
             year INTEGER NOT NULL,
             mileage INTEGER,
             daily_rate DECIMAL(10, 2) NOT NULL,
@@ -42,7 +42,7 @@ class SchemaHandler:
             vehicle_id INTEGER,
             start_date DATE NOT NULL,
             end_date DATE NOT NULL,
-            status TEXT DEFAULT 'pending' CHECK(status IN ('pending', 'approved', 'rejected', 'completed')),
+            status VARCHAR(50) DEFAULT 'pending' CHECK(status IN ('pending', 'approved', 'rejected', 'completed')),
             total_cost DECIMAL(10, 2),
             FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
             FOREIGN KEY (vehicle_id) REFERENCES vehicles(id) ON DELETE SET NULL

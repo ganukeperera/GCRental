@@ -17,7 +17,7 @@ class Session:
 
     @property
     def current_user(self):
-        """The getter method for current_user"""
+        """The getter method for current_user attribute"""
         return self.__current_user
 
     def is_authenticated(self):

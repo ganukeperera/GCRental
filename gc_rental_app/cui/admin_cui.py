@@ -1,5 +1,6 @@
 """Admin CUI"""
 
+import logging
 from cui.cui_helper import get_valid_input, print_table, draw_box, clear_screen
 from repositories.entities.vehicle import Vehicle
 import configs.strings
@@ -9,6 +10,7 @@ import utils.exceptions as exceptions
 from .session import Session
 from .cui import CUI
 
+logger = logging.getLogger(__name__)
 
 class AdminCUI(CUI):
     """CUI related to Admin"""
@@ -130,11 +132,11 @@ class AdminCUI(CUI):
             print("User not authorized")
         except ValueError as e:
             print(e)
-        except Exception:
+        except Exception as e:
+            logging.exception("Unexpected error occurred!!! error = %s", e)
             print("Add vehicle failed! Please try again later")
         finally:
             input("Press Enter to continue...")
-
     
     def __show_add_car(self):
         "Adding Cars to the inventory"
@@ -148,7 +150,8 @@ class AdminCUI(CUI):
             print("User not authorized")
         except exceptions.VehicleAlreadyExist:
             print("Vehicle Already exist")
-        except Exception:
+        except Exception as e:
+            logging.exception("Unexpected error occurred!!! error = %s", e)
             print("Add vehicle failed! Please try again later")
         finally:
             input("Press Enter to continue...")
@@ -170,12 +173,11 @@ class AdminCUI(CUI):
 
         except PermissionError:
             print("User not authorized")
-
         except exceptions.VehicleNotFound:
             print("Vehicle not found")
-
         except Exception as e:
-            print("Update vehicle failed! Please try again later:", e)
+            logging.exception("Unexpected error occurred!!! error = %s", e)
+            print("Update vehicle failed! Please try again later!!!")
         finally:
             input("Press Enter to continue...")
 
@@ -197,11 +199,10 @@ class AdminCUI(CUI):
 
         except PermissionError:
             print("User not authorized")
-
         except exceptions.VehicleNotFound:
             print("Vehicle not found")
-
-        except Exception:
+        except Exception as e:
+            logging.exception("Unexpected error occurred!!! error = %s", e)
             print("Remove vehicle failed! Please try again later")
         finally:
             input("Press Enter to continue...")
@@ -235,7 +236,8 @@ class AdminCUI(CUI):
             ]
 
             print_table(headers, rows)
-        except Exception:
+        except Exception as e:
+            logging.exception("Unexpected error occurred!!! error = %s", e)
             print("Remove vehicle failed! Please try again later!")
         finally:
             input("Press Enter to continue...")
@@ -367,7 +369,8 @@ class AdminCUI(CUI):
         except PermissionError:
             print("You are not authorized to view all bookings.")
         except Exception as e:
-            print("Failed to load bookings. Please try again later. %s", e)
+            logging.exception("Unexpected error occurred!!! error = %s", e)
+            print("Failed to load bookings. Please try again later!")
         finally:
             input("Press Enter to continue...")
 
@@ -448,7 +451,8 @@ class AdminCUI(CUI):
         except ValueError:
             print("Invalid input. Please enter valid numbers.")
         except Exception as e:
-            print("Failed to update booking. Please try again later.", e)
+            logging.exception("Unexpected error occurred!!! error = %s", e)
+            print("Failed to update booking. Please try again later.")
         finally:
             input("Press Enter to continue...")
 
@@ -535,9 +539,10 @@ class AdminCUI(CUI):
 
         except PermissionError:
             print("You are not authorized to complete bookings.")
-        except ValueError as e:
-            print(e)
+        except ValueError:
+            print("Cannot complete booking. Please try again later!")
         except Exception as e:
-            print("Failed to complete booking. Please try again later. %s", e)
+            logging.exception("Unexpected error occurred!!! error = %s", e)
+            print("Failed to complete booking. Please try again later.")
         finally:
             input("Press Enter to continue...")

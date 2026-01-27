@@ -1,13 +1,16 @@
 """Super Admin CUI"""
 
+import logging
 import configs.strings
 from configs.app_constants import USER_NAME_POLICY_STRING, MIN_USERNAME_LENGTH, MIN_PASSWORD_LENGTH, PASSWORD_POLICY_STRING, UserRole
 from services.auth_service import AuthService
 from services.authorization_service import AuthorizationService
-from utils.exceptions import UserRegistrationError
+from utils.exceptions import UserRegistrationError, UserNameNotAvailable
 from .session import Session
 from .cui import CUI
 from .cui_helper import get_valid_input, draw_box, clear_screen
+
+logger = logging.getLogger(__name__)
 
 class SuperAdminCUI(CUI):
     """CUI related to Super Admin"""
@@ -63,7 +66,12 @@ class SuperAdminCUI(CUI):
             )
             self.__auth_service.register(username, username, password, "", UserRole.ADMIN.value)
             print("User Registration completed!")
+        except UserNameNotAvailable:
+            print("Username not available to use. Try again with different username!")
         except UserRegistrationError:
+            print(configs.strings.REGISTRATION_FAILED)
+        except Exception as e:
+            logging.exception("Unexpected error occurred!!! error = %s", e)
             print(configs.strings.REGISTRATION_FAILED)
         finally:
             input("Press ENTER to continue...")

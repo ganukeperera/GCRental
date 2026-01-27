@@ -1,8 +1,11 @@
 """BookingAnalythicsService"""
 
+import logging
 from datetime import datetime, timedelta, date
 import pandas as pd
 from repositories.bookings_repository import BookingsRepository
+
+logger = logging.getLogger(__name__)
 
 class BookingAnalyticsService:
     """This class suppose to process booking data using pandas"""
@@ -40,43 +43,48 @@ class BookingAnalyticsService:
         the given vehicle based on the demand within the given period.
         Higher booking period will increase the pricing multiplier dynamically
         """
-        df = self._build_dataframe()
-        if df.empty:
-            return 1.0
-        
-        # Ensure new_start_date is datetime
-        if isinstance(start_date, datetime):
-            booking_start = start_date
-        else:
-            booking_start = datetime.combine(start_date, datetime.min.time())
-        
-        # Define demand window (default last 7 days)
-        delta = timedelta(days=window_days)
-        window_start = booking_start - delta
-        window_end = booking_start + delta
+        try:
+            df = self._build_dataframe()
+            if df.empty:
+                return 1.0
+            
+            # Ensure new_start_date is datetime
+            if isinstance(start_date, datetime):
+                booking_start = start_date
+            else:
+                booking_start = datetime.combine(start_date, datetime.min.time())
+            
+            # Define demand window (default last 7 days)
+            delta = timedelta(days=window_days)
+            window_start = booking_start - delta
+            window_end = booking_start + delta
 
-        recent_bookings = df[
-            (df["vehicle_id"] == vehicle_id) &
-            (df["start_date"] >= window_start) &
-            (df["start_date"] < window_end)
-        ]
+            recent_bookings = df[
+                (df["vehicle_id"] == vehicle_id) &
+                (df["start_date"] >= window_start) &
+                (df["start_date"] < window_end)
+            ]
 
-        count = len(recent_bookings)
+            count = len(recent_bookings)
 
-        if count >= 5:
-            return 1.2
-        elif count >= 3:
-            return 1.1
-        else:
-            return 1.0
+            if count >= 5:
+                return 1.2
+            elif count >= 3:
+                return 1.1
+            else:
+                return 1.0
+        except Exception as e:
+            logger.exception("Unexpected error occurred calculating demand factor. %s", e)
 
     def get_monthly_revenue(self):
         """Generate monthly revenue report"""
-
-        df = self._build_dataframe()
-        df = df[df["status"] == "completed"]
-        revenue = df.groupby("month")["total_cost"].sum().sort_index(ascending=True)
-        rows = [[str(month), f"{amount:.2f}"]
-            for month, amount in revenue.items()
-            ]
-        return rows
+        try:
+            df = self._build_dataframe()
+            df = df[df["status"] == "completed"]
+            revenue = df.groupby("month")["total_cost"].sum().sort_index(ascending=True)
+            rows = [[str(month), f"{amount:.2f}"]
+                for month, amount in revenue.items()
+                ]
+            return rows
+        except Exception as e:
+            logger.exception("Unexpected error occurred while generating monthly revenue. %s", e)
