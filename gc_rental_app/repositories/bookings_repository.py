@@ -4,7 +4,8 @@ from datetime import date
 from decimal import Decimal
 from database.database_handler import DatabaseHandler
 from configs.app_constants import BookingStatus
-from .entities.booking import Booking
+from .entities.booking import Booking 
+from .entities.vehicle import Vehicle
 
 class BookingsRepository:
     """Methods related to vehicle repo"""
@@ -174,3 +175,56 @@ class BookingsRepository:
                 )
             )
         return bookings
+    
+    def is_vehicle_booked(self, vehicle_id: int, start_date: date, end_date: date) -> bool:
+        """
+        Return True if the vehicle has a booking that overlaps the given date range
+        with status 'pending' or 'confirmed'.
+        """
+        sql = """
+        SELECT 1
+        FROM bookings
+        WHERE vehicle_id = ?
+        AND status IN ('pending', 'confirmed')
+        AND NOT (end_date < ? OR start_date > ?)
+        LIMIT 1
+        """
+        cursor = self.__db.execute(sql, (vehicle_id, start_date.isoformat(), end_date.isoformat()))
+        return cursor.fetchone() is not None
+    
+    def get_available_vehicles(
+        self,
+        start_date: date,
+        end_date: date
+    ) -> list[Vehicle]:
+        """Get the all the vehicles that are available for booking for the given date range"""
+
+        sql = """
+        SELECT *
+        FROM vehicles v
+        WHERE v.id NOT IN (
+            SELECT vehicle_id
+            FROM bookings
+            WHERE status IN ('pending', 'confirmed')
+              AND NOT (end_date < ? OR start_date > ?)
+        )
+        """
+        cursor = self.__db.execute(sql, (start_date.isoformat(), end_date.isoformat()))
+        rows = cursor.fetchall()
+
+        vehicles = []
+        for row in rows:
+            vehicles.append(
+                Vehicle(
+                    plate_number=row["plate_number"],
+                    make=row["make"],
+                    model=row["model"],
+                    year=row["year"],
+                    mileage=row["mileage"],
+                    daily_rate=row["daily_rate"],
+                    min_rent_period=row["min_rent_period"],
+                    max_rent_period=row["max_rent_period"],
+                    vehicle_id=row["id"]
+                )
+            )
+        return vehicles

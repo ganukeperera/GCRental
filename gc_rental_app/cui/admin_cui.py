@@ -413,9 +413,9 @@ class AdminCUI(CUI):
             # Ask admin if they want to take action
             choice = get_valid_input(
                 "Do you want to approve or reject a booking? (y/n): ",
-                lambda x: (x in ("y", "n", "Y", "N"))
+                validator=lambda x: x in ("y", "n", "Y", "N")
             )
-            if choice != "y" or choice != "Y":
+            if choice.lower() != "y":
                 return
             # Get booking ID
             booking_id = get_valid_input(
@@ -432,10 +432,10 @@ class AdminCUI(CUI):
 
             # Approve or reject
             action = get_valid_input(
-                "Approve or Reject? (a/r): ",
+                "Do you want to Approve or Reject selected booking? (a/r): ",
                 validator= lambda x: x in ("a", "r", "A", "R")
             )
-            if action == "a" or action == "A":
+            if action.lower() == "a":
                 self.__booking_service.approve_booking(self.__session.current_user, booking_id)
                 print(f"Booking {booking_id} approved successfully.")
 

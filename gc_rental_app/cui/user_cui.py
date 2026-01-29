@@ -5,6 +5,7 @@ import configs.strings
 from repositories.entities.booking import Booking
 from services.vehicle_service import VehicleService
 from services.bookings_service import BookingService
+from utils.exceptions import VehicleAlreadyBooked
 from .cui_helper import get_valid_input, clear_screen, draw_box, get_date_input, print_table
 from .session import Session
 from .cui import CUI
@@ -72,7 +73,7 @@ class UserCUI(CUI):
         requested_days = (end_date - start_date).days + 1
 
         try:
-            vehicles = self.__vehicle_service.list_available_vehicles(start_date, end_date)
+            vehicles = self.__booking_service.list_available_vehicles(start_date, end_date)
             if not vehicles:
                 print("\nNo vehicles available for the selected period.")
             else:
@@ -98,13 +99,13 @@ class UserCUI(CUI):
                     "Do you want to continue booking? (y/n): ",
                     validator= lambda x: x in ("y", "n","Y", "N")
                 )
-                if cont != "y" or cont != "Y":
+                if cont.lower() != "y":
                     print("Booking cancelled.")
                     logger.info("User cancel booking")
                     return
                 
                 # Select vehicle
-                vehicle_id = int(input("Enter Vehicle ID to book: ").strip())
+                vehicle_id = get_valid_input("Enter Vehicle ID to book: ", int)
                 selected_vehicle = next((v for v in vehicles if v.vehicle_id == vehicle_id), None)
                 if not selected_vehicle:
                     print("Invalid vehicle ID selected.")
@@ -115,13 +116,13 @@ class UserCUI(CUI):
                 print(f"You selected: {selected_vehicle.make} {selected_vehicle.model}")
                 print(f"Booking period: {start_date} to {end_date} ({requested_days} days)")
                 total_cost = self.__booking_service.calculate_price(selected_vehicle, start_date, end_date)
-                print(f"Total cost: ${total_cost:.2f}")
+                print(f"Total cost: ${total_cost:.2f}\n")
 
                 confirm = get_valid_input(
                     "Confirm this booking? (y/n): ",
                     validator= lambda x: x in ("y", "Y", "n", "N")
                 )
-                if confirm != "y":
+                if confirm.lower() != "y":
                     print("Booking cancelled.")
                     return
                 
@@ -136,10 +137,11 @@ class UserCUI(CUI):
                 )
                 self.__booking_service.add_booking(self.__session.current_user, booking)
                 print(f"Booking successful! Your Booking Reference is: {booking.id}")
-                
+        except VehicleAlreadyBooked:
+            print("Failed to complete the booking. Vehicle already booked!!. Please try again later!")
         except Exception as e:
             logging.exception("Unexpected error occurred!!! error = %s", e)
-            print("Failed to retrieve available vehicles. Please try again later!")
+            print("Failed to complete the booking. Please try again later!")
         finally:
             input("Press Enter to continue...")
 

@@ -8,7 +8,7 @@ from repositories.entities.booking import Booking
 from repositories.bookings_repository import BookingsRepository
 from repositories.vehicle_repository import VehicleRepository
 from configs.app_constants import BookingStatus, ANALYTICS_DEMAND_PERIOD
-from utils.exceptions import BookingNotFound
+from utils.exceptions import BookingNotFound, VehicleAlreadyBooked
 from .authorization_service import AuthorizationService
 from .booking_analytics_service import BookingAnalyticsService
 
@@ -40,7 +40,7 @@ class BookingService:
                 booking.end_date
             )
             if not available:
-                raise ValueError("Vehicle not available for the selected dates or rental period.")
+                raise VehicleAlreadyBooked("Vehicle not available for the selected dates or rental period.")
 
             # Insert booking into DB
             self.__booking_repo.add(booking)
@@ -53,7 +53,7 @@ class BookingService:
             logger.exception("Booking failed. User not authorized!")
             raise
 
-        except ValueError as e:
+        except VehicleAlreadyBooked as e:
             logger.exception("Booking failed %s", e)
             raise
 
@@ -90,7 +90,7 @@ class BookingService:
                 return False
 
             # Repo method checks overlapping bookings
-            return not self.__vehicle_repo.is_vehicle_booked(vehicle.vehicle_id, start_date, end_date)
+            return not self.__booking_repo.is_vehicle_booked(vehicle.vehicle_id, start_date, end_date)
         except Exception as e:
             logger.exception("Check vehicle availability failed! %s", e)
             raise
@@ -267,4 +267,68 @@ class BookingService:
             raise
         except Exception as e:
             logger.exception("Complete booking failed: %s", e)
+            raise
+
+    def check_vehicle_availability(self, vehicle: Vehicle, start_date: date, end_date: date) -> bool:
+        """
+        Returns True if vehicle is available for booking given date range
+        considering existing bookings and min/max rent period.
+        """
+        try:
+            # Validate date range
+            if start_date > end_date:
+                raise ValueError("Start date must be before end date")
+
+            requested_days = (end_date - start_date).days + 1
+
+            # Check min/max rent period
+            if requested_days < vehicle.min_rent_period or requested_days > vehicle.max_rent_period:
+                logger.info("Min max rent period violated for vehicle %s from %s to %s. Allowed max period: %s, min period: %s",
+                vehicle.plate_number, start_date, end_date, vehicle.max_rent_period, vehicle.min_rent_period)
+                return False
+
+            # Check overlapping bookings
+            if self.__booking_repo.is_vehicle_booked(vehicle.vehicle_id, start_date, end_date):
+                logger.info("Vehicle %s is already booked and not available for the period from %s to %s.",
+                vehicle.plate_number, start_date, end_date)
+                return False
+
+            return True
+
+        except Exception as e:
+            logger.exception(
+                "Failed to check availability for vehicle %s from %s to %s. Error: %s",
+                vehicle.plate_number, start_date, end_date, e
+            )
+            raise
+
+    def list_available_vehicles(self, start_date: date, end_date: date):
+        """List vehicles available for booking in the given date range"""
+        try:
+            if start_date > end_date:
+                raise ValueError("Start date must be before end date")
+
+            requested_days = (end_date - start_date).days + 1
+
+            # Get available vehicles from repo
+            vehicles = self.__vehicle_repo.get_available_vehicles(start_date, end_date)
+
+            # Filter by min/max rent period
+            filtered = [
+                v for v in vehicles
+                if v.min_rent_period <= requested_days <= v.max_rent_period
+            ]
+
+            return filtered
+
+        except ValueError as e:
+            logger.exception(
+                "Invalid date range: %s - %s. Error: %s", start_date, end_date, e
+            )
+            raise
+        except Exception as e:
+            logger.exception(
+                "Failed to retrieve available vehicles for dates: %s - %s. Error: %s",
+                start_date, end_date, e
+            )
             raise

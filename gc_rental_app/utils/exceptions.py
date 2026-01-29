@@ -24,6 +24,9 @@ class VehicleAlreadyExist(GCRentalException):
 class VehicleNotFound(GCRentalException):
     """Vehicle Not Found"""
 
+class VehicleAlreadyBooked(GCRentalException):
+    """Vehicle Not Found"""
+
 class BookingNotFound(GCRentalException):
     """Booking Not Found"""
 
