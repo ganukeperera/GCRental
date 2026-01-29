@@ -91,10 +91,9 @@ class GCRentalApp:
             cui.show_menu()
         except InvalidLogin:
             print("\n",configs.strings.INVALID_CREDENTIALS, sep="")
+            input("Press Enter to continue...")
         except Exception as e:
             logging.exception("Unexpected error occurred!!! error = %s", e)
-        finally:
-            input("Press ENTER to continue...")
 
     def show_register_screen(self):
         """Register screen"""
@@ -123,12 +122,13 @@ class GCRentalApp:
             )
             self.__auth_service.register(fullname, username, password, mobile, UserRole.USER.value)
             print("User Registration completed!")
+            input("Press Enter to continue...")
         except UserNameNotAvailable:
-            print("Username not available to use. Please try again later!")
+            print("The username you entered not available. Please try again later!")
+            input("Press Enter to continue...")
         except UserRegistrationError:
             print(configs.strings.REGISTRATION_FAILED)
+            input("Press Enter to continue...")
         except Exception as e:
             logging.exception("Unexpected error occurred!!! error = %s", e)
             print(configs.strings.REGISTRATION_FAILED)
-        finally:
-            input("Press ENTER to continue...")

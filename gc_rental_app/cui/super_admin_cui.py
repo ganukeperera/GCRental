@@ -67,7 +67,7 @@ class SuperAdminCUI(CUI):
             self.__auth_service.register(username, username, password, "", UserRole.ADMIN.value)
             print("User Registration completed!")
         except UserNameNotAvailable:
-            print("Username not available to use. Try again with different username!")
+            print("The username you entered not available. Try again with different username!")
         except UserRegistrationError:
             print(configs.strings.REGISTRATION_FAILED)
         except Exception as e:

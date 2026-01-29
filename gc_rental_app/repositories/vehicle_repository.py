@@ -15,7 +15,7 @@ class VehicleRepository:
     def add(self, vehicle: Vehicle):
         """Add vehicle to the table"""
         sql = """
-        INSERT INTO vehicles (
+        INSERT INTO vehicle (
             plate_number, make, model, year,
             mileage, daily_rate,
             min_rent_period, max_rent_period
@@ -38,7 +38,7 @@ class VehicleRepository:
         """Update vehicle"""
         logger.debug("Update vehicle get called with: %s", vehicle.vehicle_id)
         sql = """
-            UPDATE vehicles
+            UPDATE vehicle
             SET plate_number = ?, make = ?, model = ?, year = ?,
                 mileage = ?, daily_rate = ?,
                 min_rent_period = ?, max_rent_period = ?
@@ -59,19 +59,19 @@ class VehicleRepository:
 
     def remove(self, vehicle_id):
         """Delete record from vehicle table"""
-        sql = "DELETE FROM vehicles WHERE id = ?"
+        sql = "DELETE FROM vehicle WHERE id = ?"
         self.__db.execute(sql, (vehicle_id,))
 
     def get_all(self):
         """Get all vehicles"""
-        cursor = self.__db.execute("SELECT * FROM vehicles")
+        cursor = self.__db.execute("SELECT * FROM vehicle")
         rows = cursor.fetchall()
         return [Vehicle.from_row(row) for row in rows]
 
     def get_by_id(self, vehicle_id):
         """Search vehicle using id"""
         cursor = self.__db.execute(
-                "SELECT * FROM vehicles WHERE id = ?",
+                "SELECT * FROM vehicle WHERE id = ?",
                 (vehicle_id,)
             )
         row = cursor.fetchone()
@@ -80,7 +80,7 @@ class VehicleRepository:
     def get_by_plate(self, plate_number):
         """Search vehicle by plate number"""
         cursor = self.__db.execute(
-                "SELECT * FROM vehicles WHERE plate_number = ?",
+                "SELECT * FROM vehicle WHERE plate_number = ?",
                 (plate_number,)
             )
         row = cursor.fetchone()
@@ -90,7 +90,7 @@ class VehicleRepository:
         """Repo method to update the mileage for given vehicles"""
         
         sql = """
-        UPDATE vehicles
+        UPDATE vehicle
         SET mileage = ?
         WHERE id = ?
         """

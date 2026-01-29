@@ -10,7 +10,7 @@ class SchemaHandler:
     logger = logging.getLogger(__name__)
 
     USER_TABLE_SCHEMA = """
-        CREATE TABLE IF NOT EXISTS users (
+        CREATE TABLE IF NOT EXISTS user (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             fullname VARCHAR(255) NOT NULL,
             username VARCHAR(50) UNIQUE NOT NULL,
@@ -22,7 +22,7 @@ class SchemaHandler:
     """
 
     VEHICLE_TABLE_SCHEMA = """
-        CREATE TABLE IF NOT EXISTS vehicles (
+        CREATE TABLE IF NOT EXISTS vehicle (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             plate_number VARCHAR(20) UNIQUE NOT NULL,
             make VARCHAR(50) NOT NULL,
@@ -36,7 +36,7 @@ class SchemaHandler:
     """
 
     BOOKING_TABLE_SCHEMA = """
-        CREATE TABLE IF NOT EXISTS bookings (
+        CREATE TABLE IF NOT EXISTS booking (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER,
             vehicle_id INTEGER,
@@ -44,8 +44,8 @@ class SchemaHandler:
             end_date DATE NOT NULL,
             status VARCHAR(50) DEFAULT 'pending' CHECK(status IN ('pending', 'approved', 'rejected', 'completed')),
             total_cost DECIMAL(10, 2),
-            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
-            FOREIGN KEY (vehicle_id) REFERENCES vehicles(id) ON DELETE SET NULL
+            FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE SET NULL,
+            FOREIGN KEY (vehicle_id) REFERENCES vehicle(id) ON DELETE SET NULL
         )
     """
 
@@ -68,10 +68,10 @@ class SchemaHandler:
     def __seed_super_admin(cls, db: DatabaseHandler):
 
         exists = db.execute_and_fetch_one(
-        "SELECT COUNT(*) FROM users WHERE role = ?",
+        "SELECT COUNT(*) FROM user WHERE role = ?",
         (UserRole.SUPER_ADMIN.value,)
         )
 
         if not exists:
             db.execute(
-            "INSERT INTO users (fullname, username, password, role) VALUES (?, ?, ?, ?)", ("superadmin", "superadmin", "$2b$12$RDUIHEl327lBsoWJbLaLE.bi.FulZ3Z7wrv8F4FVbnlxHVd5uhoU2", UserRole.SUPER_ADMIN.value) ) 
+            "INSERT INTO user (fullname, username, password, role) VALUES (?, ?, ?, ?)", ("superadmin", "superadmin", "$2b$12$RDUIHEl327lBsoWJbLaLE.bi.FulZ3Z7wrv8F4FVbnlxHVd5uhoU2", UserRole.SUPER_ADMIN.value) ) 

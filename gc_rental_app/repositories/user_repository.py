@@ -20,14 +20,14 @@ class UserRepo():
         hashed_password = PasswordHasher.hash_password(user.password)
 
         self.__db.execute(
-                "INSERT INTO users (fullname,username, password, mobile, role) VALUES (?, ?, ?, ?, ?)",
+                "INSERT INTO user (fullname,username, password, mobile, role) VALUES (?, ?, ?, ?, ?)",
                 (user.fullname, user.username, hashed_password, user.mobile, user.role)
             )
         logger.info("User %s registered successfully", user.fullname)
 
     def select_user(self, username):
         """select user with given username"""
-        cursor = self.__db.execute("SELECT * FROM users WHERE username=?", (username,))
+        cursor = self.__db.execute("SELECT * FROM user WHERE username=?", (username,))
         row = cursor.fetchone()
         if not row:
             return None

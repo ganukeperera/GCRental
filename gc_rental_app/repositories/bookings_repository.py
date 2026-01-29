@@ -15,7 +15,7 @@ class BookingsRepository:
     def add(self, booking: Booking):
         """Add booking into DB"""
         sql = """
-        INSERT INTO bookings (user_id, vehicle_id, start_date, end_date, status, total_cost)
+        INSERT INTO booking (user_id, vehicle_id, start_date, end_date, status, total_cost)
         VALUES (?, ?, ?, ?, ?, ?)
         """
         cursor = self.__db.execute(
@@ -37,7 +37,7 @@ class BookingsRepository:
         cursor = self.__db.execute(
             """
             SELECT id, user_id, vehicle_id, start_date, end_date, status, total_cost
-            FROM bookings
+            FROM booking
             WHERE status = ?
             """,
             (status.value,)
@@ -69,7 +69,7 @@ class BookingsRepository:
 
         cursor = self.__db.execute(
             """
-            UPDATE bookings
+            UPDATE booking
             SET status = ?,
             total_cost = ?
             WHERE id = ?
@@ -88,7 +88,7 @@ class BookingsRepository:
 
         cursor = self.__db.execute(
             """
-            UPDATE bookings
+            UPDATE booking
             SET status = ?
             WHERE id = ?
             """,
@@ -107,7 +107,7 @@ class BookingsRepository:
                 end_date,
                 status,
                 total_cost
-            FROM bookings
+            FROM booking
             WHERE id = ?
         """
         cursor = self.__db.execute(sql, (booking_id,))
@@ -130,7 +130,7 @@ class BookingsRepository:
         """Get all bookings for a given user"""
         sql = """
         SELECT id, user_id, vehicle_id, start_date, end_date, status, total_cost
-        FROM bookings
+        FROM booking
         WHERE user_id = ?
         ORDER BY start_date DESC
         """
@@ -156,7 +156,7 @@ class BookingsRepository:
         """Get all bookings"""
         sql = """
         SELECT id, user_id, vehicle_id, start_date, end_date, status, total_cost
-        FROM bookings
+        FROM booking
         ORDER BY id DESC
         """
         cursor = self.__db.execute(sql)
@@ -183,7 +183,7 @@ class BookingsRepository:
         """
         sql = """
         SELECT 1
-        FROM bookings
+        FROM booking
         WHERE vehicle_id = ?
         AND status IN ('pending', 'confirmed')
         AND NOT (end_date < ? OR start_date > ?)
@@ -204,7 +204,7 @@ class BookingsRepository:
         FROM vehicles v
         WHERE v.id NOT IN (
             SELECT vehicle_id
-            FROM bookings
+            FROM booking
             WHERE status IN ('pending', 'confirmed')
               AND NOT (end_date < ? OR start_date > ?)
         )
